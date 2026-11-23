@@ -1,0 +1,1103 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>연속간행물실 근무 대시보드</title>
+<meta name="description" content="인천대학교 연속간행물실 근무 대시보드의 메뉴를 차례로 둘러보는 소개 페이지">
+<script>document.documentElement.classList.add('js')</script>
+<!-- 시연 화면은 실제 프론트 CSS를 그대로 쓴다 (build-app-css.mjs로 생성, .app 아래로 한정) -->
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="stylesheet" href="app.css">
+<style>
+@font-face{font-family:Pretendard;src:url("PretendardVariable-1.3.9.woff2") format("woff2");font-weight:45 920;font-display:swap}
+:root{
+  --t-ink:#191f28;--t-sub:#4e5968;--t-muted:#6b7684;--t-line:#e5e8eb;--t-soft:#f2f4f6;--t-paper:#f9fafb;
+  --t-blue:#2272eb;--t-blue-50:#e8f3ff;--t-yellow:#ffa927;--t-yellow-50:#fff3e0;--t-yellow-ink:#9a5200;
+  --t-ease:cubic-bezier(.22,.8,.24,1);
+  /* 살짝 쓰는 유리: 뒤 배경이 은은하게 비치는 반투명 흰 면 */
+  --g-fill:rgba(255,255,255,.58);--g-edge:rgba(255,255,255,.85);--g-blur:saturate(170%) blur(18px);
+  --g-shadow:0 8px 24px rgba(0,27,55,.06),inset 0 1px 0 rgba(255,255,255,.9);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:72px}
+html,body{overflow-x:clip}
+body{margin:0;font-family:Pretendard,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;color:var(--t-ink);background:#f6f8fb;line-height:1.6;word-break:keep-all;overflow-wrap:break-word;-webkit-font-smoothing:antialiased}
+:focus-visible{outline:3px solid var(--t-blue);outline-offset:3px;border-radius:10px}
+/* 유리가 비칠 색: 화면에 고정된 옅은 빛 번짐 */
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(42% 38% at 8% 6%,rgba(34,114,235,.16),transparent 70%),radial-gradient(36% 32% at 94% 28%,rgba(120,170,255,.16),transparent 70%),radial-gradient(40% 36% at 22% 88%,rgba(90,200,250,.13),transparent 70%),radial-gradient(36% 32% at 88% 92%,rgba(34,114,235,.11),transparent 70%)}
+.skip{position:absolute;left:16px;top:-60px;z-index:80;background:var(--t-ink);color:#fff;padding:10px 16px;border-radius:10px;text-decoration:none;font-weight:600}
+.skip:focus{top:12px}
+.wrap{width:min(1200px,100% - 48px);margin:0 auto}
+
+/* 머리 */
+.top{position:sticky;top:0;z-index:70;background:rgba(255,255,255,.6);backdrop-filter:var(--g-blur);-webkit-backdrop-filter:var(--g-blur);border-bottom:1px solid var(--g-edge);box-shadow:0 1px 0 rgba(0,27,55,.04)}
+.top .wrap{display:flex;align-items:center;height:60px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit}
+.brand-mark{filter:drop-shadow(0 2px 4px rgba(30,60,110,.18))}
+.brand-name{display:flex;flex-direction:column;line-height:1.2;font-size:16px;font-weight:800;letter-spacing:-.02em}
+.brand-name small{font-size:11px;font-weight:600;letter-spacing:0;color:var(--t-muted)}
+
+/* 첫 화면 */
+.hero{position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:max(520px,min(calc(100svh - 60px),56.25vw));padding:48px 16px 64px;text-align:center}
+.hero h1{position:relative;z-index:2;margin:0;font-size:clamp(36px,4.8vw,84px);line-height:1.28;letter-spacing:-.04em;font-weight:800}
+.hero h1 .accent{color:var(--t-blue)}
+/* 첫 멘트 타이핑: 글자 자리를 미리 잡아 두고 하나씩 드러내 레이아웃이 흔들리지 않게 한다 */
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+@media (prefers-reduced-motion:no-preference){.js .hero h1:not(.ty),.js .hero-sub:not(.ty){visibility:hidden}}
+.ty .ch{opacity:0}
+.ty .ch.on{opacity:1}
+.ty .ch.at{position:relative}
+.ty .ch.at::after{content:"";position:absolute;right:-.08em;top:.1em;bottom:.1em;width:.07em;border-radius:1px;background:var(--t-blue);animation:t-blink 1s steps(1) infinite}
+@keyframes t-blink{50%{opacity:0}}
+.hero-sub{position:relative;z-index:2;margin:clamp(20px,2.6vw,48px) 0 0;font-size:clamp(16px,1.6vw,24px);color:var(--t-sub)}
+.hero-icons{position:absolute;inset:0;z-index:1;pointer-events:none}
+.hero-ic{position:absolute;width:clamp(56px,7.6vw,132px);aspect-ratio:1;transform:translate(-50%,-50%)}
+.hero-ic>div,.hero-ic>div>div{width:100%;height:100%}
+.hero-ic svg{display:block;width:100%;height:100%;overflow:visible;filter:drop-shadow(0 8px 14px rgba(40,90,170,.16))}
+/* 첫 화면 맨 아래: 아래로 스크롤하라는 안내. 첫 멘트가 다 써질 즈음 나타나 화살표가 천천히 오르내린다 */
+.scroll-cue{position:absolute;left:50%;bottom:clamp(20px,3vw,40px);z-index:2;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 12px;border-radius:12px;font-size:14px;font-weight:600;color:var(--t-muted);text-decoration:none;animation:cue-in .8s 2.4s var(--t-ease) both;transition:color .2s}
+.scroll-cue:hover{color:var(--t-blue)}
+.scroll-cue svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;animation:cue-bob 1.8s 3.2s ease-in-out infinite}
+@keyframes cue-in{from{opacity:0;transform:translate(-50%,8px)}}
+@keyframes cue-bob{50%{transform:translateY(5px)}}
+/* 첫 화면 아래: 실제 서비스 화면 세 장을 기울여 겹친다. 화면에 들어올 때 펼쳐진다 */
+.hero-layers{padding:0 0 24px}
+.layers{position:relative;margin:0 auto;width:min(1120px,100%)}
+.layers-inner{position:absolute;left:50%;top:0;transform-origin:top center;perspective:2200px}
+.scene{position:absolute;inset:0;transform-style:preserve-3d;transform:rotateX(18deg) rotateY(-13deg) rotateZ(4deg);animation:t-tilt 1.6s var(--t-ease) both,t-drift 10s 1.6s ease-in-out infinite alternate}
+@keyframes t-tilt{from{transform:rotateX(0) rotateY(0) rotateZ(0)}}
+@keyframes t-drift{from{transform:rotateX(18deg) rotateY(-13deg) rotateZ(4deg)}to{transform:rotateX(16deg) rotateY(-9deg) rotateZ(3deg)}}
+.ly{position:absolute;background:#fff;border-radius:22px;border:1px solid rgba(0,27,55,.06);text-align:left;transform:translateZ(var(--z));animation:t-rise 1.3s var(--t-ease) both;animation-delay:var(--dl,0s)}
+@keyframes t-rise{from{transform:translateZ(0) translateY(48px);opacity:0}}
+.js .hero-layers:not(.in) .scene,.js .hero-layers:not(.in) .ly{animation-play-state:paused}
+.ly-sch{left:200px;top:10px;width:640px;--z:0px;box-shadow:0 40px 80px -20px rgba(0,27,55,.18),0 8px 24px rgba(0,27,55,.06)}
+.ly-sr{left:10px;top:330px;width:400px;padding:16px 0 8px;--z:90px;--dl:.15s;box-shadow:0 40px 60px -24px rgba(0,27,55,.25)}
+.ly-ai{left:650px;top:240px;width:410px;padding:18px 16px;--z:170px;--dl:.3s;box-shadow:0 44px 70px -24px rgba(0,27,55,.28)}
+.layers.narrow .ly-sch{left:20px;top:0;width:560px}
+.layers.narrow .ly-sr{left:0;top:330px;width:340px}
+.layers.narrow .ly-ai{left:200px;top:300px;width:400px}
+.layers .app{background:none}
+.ly .sch-head{padding:16px 18px 4px}
+.ly .sch-title{font-size:17px}
+.ly .sch-scroll{padding:0 18px 14px}
+.ly .sch-board{--slot:13px;min-width:0;gap:0 6px;grid-template-columns:34px repeat(5,minmax(0,1fr))}
+.ly .sch-day-head{height:40px;font-size:14px}
+.ly .sch-date{min-width:24px;height:24px}
+.ly .sch-axis-ticks span{font-size:10px}
+.ly .sch-block{padding:3px 6px;border-radius:6px}
+.ly .sch-block strong{font-size:11px}
+.ly .sch-block small{font-size:10px}
+.ly .mnl-results{position:static;margin-top:8px;border:0}
+.ly .mnl-searchbox{margin:0 12px}
+
+/* 둘러보기 메뉴: 넓은 화면에서는 왼쪽의 얇은 목차, 좁은 화면에서는 위에 떠 있는 알약 바. 스크롤 위치를 따라 현재 메뉴가 바뀐다 */
+.tour{display:grid;grid-template-columns:112px minmax(0,1fr);gap:48px;width:min(1320px,100% - 48px);margin:72px auto 0}
+.tour-tabs{position:sticky;top:104px;align-self:start;z-index:60}
+.tour-tabs ol{display:flex;flex-direction:column;margin:0;padding:0;list-style:none;border-left:2px solid rgba(0,27,55,.08)}
+.tour-tabs a{display:block;margin-left:-2px;padding:7px 0 7px 16px;border-left:2px solid transparent;font-size:15px;font-weight:600;line-height:1.5;color:var(--t-muted);text-decoration:none;white-space:nowrap;transition:color .25s var(--t-ease),border-color .25s var(--t-ease)}
+.tour-tabs a:hover{color:var(--t-ink)}
+.tour-tabs a[aria-current=true]{color:var(--t-ink);font-weight:700;border-left-color:var(--t-ink)}
+.tour-tabs a:focus-visible{outline-offset:-3px;border-radius:8px}
+/* 넓은 화면의 목차는 평소엔 옅게 두고, 마우스를 올리거나 키보드로 들어오면 또렷해진다 */
+@media (hover:hover) and (min-width:1101px){
+  .tour-tabs{opacity:.42;transition:opacity .35s var(--t-ease)}
+  .tour-tabs:hover,.tour-tabs:focus-within{opacity:1}
+  /* 막대(왼쪽 테두리)는 제자리에 두고 글자만 안쪽으로 밀어 준다 */
+  .tour-tabs a{transition:color .2s var(--t-ease),border-color .2s var(--t-ease),padding-left .2s var(--t-ease)}
+  .tour-tabs a:hover{padding-left:20px}
+}
+.feat{padding:88px 0 96px;scroll-margin-top:60px;border-top:1px solid rgba(0,27,55,.07)}
+.tour-body>.feat:first-child{border-top:0}
+.feat-head{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:20px 56px;align-items:end;margin-bottom:36px}
+.kicker{display:flex;align-items:center;gap:10px;margin:0 0 16px;font-size:16px;font-weight:700;color:var(--t-blue)}
+.kicker svg{width:20px;height:20px;padding:5px;box-sizing:content-box;border-radius:9px;background:var(--t-blue-50);fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.feat h2{margin:0;font-size:clamp(30px,3.4vw,44px);line-height:1.3;letter-spacing:-.03em;font-weight:740}
+.lead{margin:0;font-size:18px;color:var(--t-sub);line-height:1.8}
+.lead+.lead{margin-top:12px}
+.note{margin:14px 0 0;font-size:15px;color:var(--t-muted);line-height:1.7}
+.demo-bar{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin:0 0 16px}
+.steps{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:6px;counter-reset:s}
+.steps li{counter-increment:s;display:flex;align-items:center;gap:8px;height:40px;padding:0 14px 0 8px;border-radius:999px;font-size:15px;color:var(--t-muted);background:rgba(255,255,255,.55);box-shadow:inset 0 0 0 1px var(--g-edge);transition:background .4s var(--t-ease),color .4s var(--t-ease)}
+.steps li::before{content:counter(s);flex:none;display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--t-line);color:var(--t-muted);font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;transition:background .4s,color .4s}
+.steps li.on{background:rgba(232,243,255,.9);color:var(--t-ink);font-weight:600}
+.steps li.on::before{background:var(--t-blue);color:#fff}
+.steps li.done{color:var(--t-sub)}
+.steps li.done::before{content:"";background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 12.5l4 4 8-9' fill='none' stroke='%232272eb' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/14px no-repeat}
+.replay{margin-left:auto;display:inline-flex;align-items:center;gap:8px;height:44px;padding:0 18px;border:1px solid var(--g-edge);border-radius:14px;background:var(--g-fill);box-shadow:var(--g-shadow);color:var(--t-ink);font:inherit;font-size:15px;font-weight:600;cursor:pointer;transition:background .2s,transform .15s}
+.replay:hover{background:rgba(255,255,255,.9)}
+.replay:active{transform:scale(.97)}
+.replay svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+
+/* 무대: 색 바탕 위에 실제 화면(.app.frame)을 올린다 */
+.stage{position:relative;isolation:isolate}
+.frame{position:relative;border-radius:20px;overflow:hidden;padding:28px 28px 28px 20px;box-shadow:0 24px 60px -18px rgba(0,27,55,.18),0 2px 8px rgba(0,27,55,.05),0 0 0 1px rgba(0,27,55,.06);container-type:inline-size}
+.frame .view{animation:none}
+.frame .page-top{padding:0 12px 20px}
+.frame .sch-board{--slot:17px}
+/* 실제 화면의 fixed 요소를 창 안에 둔다 */
+.frame .toast{position:absolute;bottom:24px;z-index:60}
+.frame .inquiry-fab{position:absolute}
+.frame .chatbot{position:absolute;height:auto;top:24px}
+.t-layer{position:absolute;inset:0;z-index:50;display:grid;place-items:center;padding:16px}
+.t-backdrop{position:absolute;inset:0;background:#00000052;animation:fade-in .2s ease-out}
+.frame .dialog{position:relative;margin:0;max-height:none;overflow:visible}
+.frame .dialog .form-actions{margin-top:20px}
+/* 데모에서 포커스 대신 쓰는 표시 (창은 inert라 실제 포커스를 받지 않는다) */
+.frame .t-focus.mnl-search input,.frame .mnl-search input.t-focus{box-shadow:inset 0 0 0 2px var(--blue500)}
+.frame .field .t-focus{outline:none;background:#fff;box-shadow:inset 0 0 0 2px var(--blue500)}
+.frame .chatbot-form.t-focus{background:#fff;box-shadow:inset 0 0 0 2px var(--blue500)}
+.frame .mnl-results li>button.t-hover{background:var(--grey50)}
+.frame .menu-list>button.t-hover{background:var(--grey100)}
+.frame .t-press{transform:scale(.96)}
+.frame .mnl-scroll{position:relative;height:600px;margin:-28px -28px -28px -20px;padding:28px 28px 28px 20px;overflow:hidden}
+.frame.ai{height:660px}
+
+/* 가짜 커서 */
+.cur{position:absolute;left:0;top:0;z-index:90;pointer-events:none;opacity:0;transform:translate(var(--x,0),var(--y,0));transition:transform var(--cd,.7s) var(--t-ease),opacity .35s}
+.cur.show{opacity:1}
+.cur svg{display:block;margin:-2px 0 0 -4px;filter:drop-shadow(0 2px 3px rgba(0,0,0,.25));transition:transform .15s}
+.cur .rs,.cur .gb{display:none;margin:-11px 0 0 -11px}
+.cur.resize .ar,.cur.grab .ar{display:none}
+.cur.resize .rs,.cur.grab .gb{display:block}
+.cur.tap svg{animation:t-press .26s ease}
+@keyframes t-press{50%{transform:scale(.82)}}
+.cur i{position:absolute;left:-14px;top:-14px;width:28px;height:28px;border-radius:50%;background:rgba(34,114,235,.35);opacity:0}
+.cur.tap i{animation:t-ripple .55s ease-out}
+@keyframes t-ripple{from{opacity:1;transform:scale(.3)}to{opacity:0;transform:scale(1.6)}}
+
+footer{padding:32px 0 48px;border-top:1px solid rgba(0,27,55,.07);font-size:14px;color:var(--t-muted)}
+.js .reveal{opacity:0;transform:translateY(28px);transition:opacity .9s var(--t-ease),transform .9s var(--t-ease)}
+.js .reveal.in{opacity:1;transform:none}
+
+/* 좁은 창: 실제 데스크톱 화면을 그대로 줄이되 읽을 수 있게 몇 군데만 접는다 */
+@container (max-width:760px){
+  .frame .page-top-lower{display:none}
+  .frame .sch-head{padding:14px 12px 6px;gap:8px}
+  .frame .sch-legend{margin-left:0;order:3;width:100%}
+  .frame .sch-person{margin-left:auto}
+  .frame .sch-scroll{padding:0 8px 8px}
+  .frame .sch-board{min-width:0;gap:0 4px;grid-template-columns:30px repeat(5,minmax(0,1fr))}
+  .frame .sch-track{padding:0 2px;column-gap:2px}
+  .frame .sch-block{padding:4px 2px}
+  .frame .sch-block small{display:none}
+  .frame .sch-block strong{font-size:11px;letter-spacing:-.5px;text-overflow:clip}
+  .frame .monthly-view>.tds-tabs,.frame .regulations-view>.tds-tabs{align-self:stretch;width:auto}
+  .frame .chatbot-ext{display:block}
+  .frame .chatbot-ext svg{display:inline;vertical-align:-2px;margin-right:4px}
+  .frame .sch-axis-ticks span{font-size:10px}
+  .frame .home-grid,.frame .people-grid,.frame .mnl-read{grid-template-columns:1fr}
+  .frame .mnl-side{display:none}
+  .frame .mnl-chapters{columns:1}
+  .frame .mnl-doc{padding:0 20px 24px}
+  .frame .chatbot{left:12px;right:12px;width:auto;top:12px;bottom:12px}
+  .frame .dialog{width:100%}
+}
+@media (max-width:1100px){
+  .tour{display:block;margin-top:40px}
+  .tour-tabs{top:72px;display:flex;justify-content:center;pointer-events:none}
+  .tour-tabs ol{pointer-events:auto;flex-direction:row;gap:2px;max-width:100%;padding:4px;border:0;overflow-x:auto;scrollbar-width:none;border-radius:999px;background:var(--g-fill);border:1px solid var(--g-edge);backdrop-filter:var(--g-blur);-webkit-backdrop-filter:var(--g-blur);box-shadow:0 8px 24px rgba(0,27,55,.08),inset 0 1px 0 rgba(255,255,255,.9)}
+  .tour-tabs ol::-webkit-scrollbar{display:none}
+  .tour-tabs a{margin:0;padding:8px 16px;border:0;border-radius:999px;transition:background .25s var(--t-ease),color .25s var(--t-ease)}
+  .tour-tabs a:hover{background:rgba(255,255,255,.7)}
+  .tour-tabs a[aria-current=true]{color:#fff;font-weight:600;background:var(--t-ink)}
+  .tour-tabs a:focus-visible{border-radius:999px}
+}
+@media (max-width:900px){
+  .feat-head{grid-template-columns:1fr;gap:16px}
+  .feat{padding:64px 0 72px}
+}
+@media (max-width:640px){
+  .wrap,.tour{width:calc(100% - 32px)}
+  .tour-tabs{top:68px}
+  .tour-tabs a{padding:7px 13px;font-size:14px}
+  .hero{min-height:560px}
+  .hero-sub{font-size:16px}
+  .lead{font-size:16px}
+  .frame{padding:16px 12px;border-radius:16px}
+  .frame .mnl-scroll{height:560px;margin:-16px -12px;padding:16px 12px}
+  .frame.ai{height:620px}
+  .steps li{height:36px;font-size:14px}
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation:none!important;transition-duration:.01ms!important;transition-delay:0s!important}
+  .cur{display:none}
+  .js .reveal{transform:none}
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">본문으로 건너뛰기</a>
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#main">
+      <svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true" class="brand-mark"><defs><linearGradient id="lg-b" x1=".1" y1="0" x2=".8" y2="1"><stop offset="0" stop-color="#5DA2FF"/><stop offset="1" stop-color="#1E66DB"/></linearGradient><linearGradient id="lg-s" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".45"/><stop offset=".6" stop-color="#fff" stop-opacity="0"/></linearGradient><filter id="lg-f" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="1.8"/></filter><clipPath id="lg-c"><rect x="4.5" y="7.15" width="14" height="17.5" rx="3.5"/></clipPath></defs><rect x="9.5" y="3.4" width="14" height="17.5" rx="3.5" fill="url(#lg-b)"/><g clip-path="url(#lg-c)"><g filter="url(#lg-f)"><rect x="9.5" y="3.4" width="14" height="17.5" rx="3.5" fill="url(#lg-b)"/></g><rect width="28" height="28" fill="#fff" fill-opacity=".55"/><rect width="28" height="28" fill="url(#lg-s)"/></g><rect x="4.5" y="7.15" width="14" height="17.5" rx="3.5" fill="none" stroke="#fff" stroke-width=".8"/><rect x="7.5" y="11.65" width="8" height="2" rx="1" fill="#2272EB"/><rect x="7.5" y="15.25" width="8" height="2" rx="1" fill="#2272EB" fill-opacity=".5"/><rect x="7.5" y="18.85" width="5" height="2" rx="1" fill="#2272EB" fill-opacity=".5"/></svg>
+      <span class="brand-name"><small>연속간행물실</small> 대시보드</span>
+    </a>
+  </div>
+</header>
+
+<main id="main">
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="hero-icons" aria-hidden="true"></div>
+    <h1 id="hero-title">근무에 필요한 정보를<br><span class="accent">한곳에 모았어요.</span></h1>
+    <p class="hero-sub">매주 매달 반복되는 근무를 대시보드 한 곳에서</p>
+    <a class="scroll-cue" href="#screens">아래로 스크롤하세요<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></a>
+  </section>
+  <div class="hero-layers wrap" id="screens" aria-hidden="true">
+    <div class="layers">
+      <div class="layers-inner">
+        <div class="scene app">
+          <div class="ly ly-sch" id="hero-sch"></div>
+          <div class="ly ly-sr mnl" id="hero-sr"></div>
+          <div class="ly ly-ai" id="hero-ai"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tour">
+    <nav class="tour-tabs" aria-label="기능 둘러보기">
+      <ol><li><a href="#home">홈</a></li><li><a href="#schedule">시간표</a></li><li><a href="#issues">이슈</a></li><li><a href="#monthly">월간 업무</a></li><li><a href="#people">인적관리</a></li><li><a href="#manual">매뉴얼</a></li><li><a href="#regulations">규정</a></li><li><a href="#inquiry">문의하기</a></li></ol>
+    </nav>
+    <div class="tour-body">
+
+      <!-- 홈 -->
+      <section class="feat" id="home" aria-labelledby="home-title">
+        <div class="feat-head reveal">
+          <div><p class="kicker"><span data-i="home"></span>홈</p><h2 id="home-title">출근하면<br>홈에서 오늘을 봐요</h2></div>
+          <p class="lead">지금 데스크를 지키는 사람과 교대 시각, 다음 근무, 오늘의 당직 선생님, 오늘 할 일을 첫 화면에 모았어요. 시간표와 이슈에 적은 내용이 그대로 이어져서 따로 찾아보지 않아도 돼요.</p>
+        </div>
+        <div class="stage n" aria-hidden="true"><div class="app frame" inert id="home-frame"></div></div>
+      </section>
+
+      <!-- 시간표 -->
+      <section class="feat" id="schedule" aria-labelledby="schedule-title">
+        <div class="feat-head reveal">
+          <div><p class="kicker"><span data-i="calendar"></span>시간표</p><h2 id="schedule-title">근무가 바뀌어도<br>한눈에 보여요</h2></div>
+          <div>
+            <p class="lead">근무는 학기 초에 정한 확정표대로 돌아가지만, 주마다 바뀌는 근무가 꼭 생겨요. 예전에는 바뀐 내용을 한눈에 보기 어려워 놓칠까 신경이 쓰였어요.</p>
+            <p class="lead">이제는 주간표에서 바로 고치고, 확정표와 달라진 근무는 빨간 점선으로 표시돼요. 잘못 옮겼으면 알림의 되돌리기 한 번이면 돼요.</p>
+          </div>
+        </div>
+        <div class="demo-bar">
+          <ol class="steps">
+            <li>관리 › 확정표대로 채우기</li>
+            <li>빈 칸을 눌러 근무 추가</li>
+            <li>아래 끝을 끌어 길이 조절</li>
+            <li>블록을 끌어 다른 요일로</li>
+            <li>알림에서 되돌리기</li>
+          </ol>
+          <button class="replay" type="button"><span data-r></span>시간표 시연 다시 보기</button>
+        </div>
+        <div class="stage" aria-hidden="true">
+          <div class="app frame" inert id="sch-frame"></div>
+          <div class="cur"></div>
+        </div>
+      </section>
+
+      <!-- 이슈 -->
+      <section class="feat" id="issues" aria-labelledby="issues-title">
+        <div class="feat-head reveal">
+          <div><p class="kicker"><span data-i="message"></span>이슈</p><h2 id="issues-title">넘겨줄 일은<br>이슈로 남겨요</h2></div>
+          <p class="lead">다음 근무자에게 넘길 일과 모두가 알아야 할 공지를 요일별로 남겨요. 처리한 사람이 체크하면 완료로 바뀌고, 남은 이슈 수는 메뉴 옆 빨간 숫자로 보여요. 여러 날에 걸친 일은 주간 이슈로 묶여요.</p>
+        </div>
+        <div class="stage n" aria-hidden="true"><div class="app frame" inert id="issues-frame"></div></div>
+      </section>
+
+      <!-- 월간 업무 -->
+      <section class="feat" id="monthly" aria-labelledby="monthly-title">
+        <div class="feat-head reveal">
+          <div><p class="kicker"><span data-i="archive"></span>월간 업무</p><h2 id="monthly-title">사다리타기 대신<br>추첨하고 체크해요</h2></div>
+          <div>
+            <p class="lead">예전에는 매달 한 사람이 카톡에서 사다리타기로 월간 업무를 배정하고 결과까지 확인했어요. 여럿이 나누면 누가 어디까지 확인했는지 챙기는 일이 늘 것 같았어요.</p>
+            <p class="lead">이제는 과월호·청소 담당을 대시보드에서 추첨하고, 맡은 사람이 끝낸 신문을 체크하면 진행률이 바로 보여요. 태깅도 근무자별로 달마다 체크해요.</p>
+          </div>
+        </div>
+        <div class="demo-bar">
+          <ol class="steps"><li>정리한 과월호 신문 체크</li><li>태깅 탭에서 이번 달 태깅 체크</li><li>청소 탭에서 이번 달 담당 확인</li></ol>
+          <button class="replay" type="button"><span data-r></span>월간 업무 시연 다시 보기</button>
+        </div>
+        <div class="stage y" aria-hidden="true"><div class="app frame" inert id="monthly-frame"></div><div class="cur"></div></div>
+      </section>
+
+      <!-- 인적관리 -->
+      <section class="feat" id="people" aria-labelledby="people-title">
+        <div class="feat-head reveal">
+          <div><p class="kicker"><span data-i="people"></span>인적관리</p><h2 id="people-title">근무자와 선생님<br>연락처도 여기에</h2></div>
+          <p class="lead">근무자 명단은 시간표와 월간 업무에, 선생님 연락처는 홈의 오늘의 당직에 그대로 쓰여요. 이름을 누르면 바로 고칠 수 있어요.</p>
+        </div>
+        <div class="stage n" aria-hidden="true"><div class="app frame" inert id="people-frame"></div></div>
+      </section>
+
+      <!-- 매뉴얼 -->
+      <section class="feat" id="manual" aria-labelledby="manual-title">
+        <div class="feat-head reveal">
+          <div><p class="kicker"><span data-i="book"></span>매뉴얼</p><h2 id="manual-title">기억나는 단어로<br>절차를 찾아요</h2></div>
+          <div>
+            <p class="lead">근로 학생이 바뀌거나 어쩌다 한 번 하는 일을 다시 맡으면 절차가 기억나지 않아 당황할 때가 있어요.</p>
+            <p class="lead">그래서 근로 매뉴얼을 장별로 옮기고, 기억나는 단어만 넣어도 찾을 수 있게 했어요. 검색어는 결과와 본문에 함께 칠해져요.</p>
+          </div>
+        </div>
+        <div class="demo-bar">
+          <ol class="steps">
+            <li>검색창에 ‘잡지 대출’ 입력</li>
+            <li>검색어가 칠해진 결과 보기</li>
+            <li>‘4.7 잡지 대출 방법’ 열기</li>
+          </ol>
+          <button class="replay" type="button"><span data-r></span>검색 시연 다시 보기</button>
+        </div>
+        <div class="stage n" aria-hidden="true">
+          <div class="app frame" inert><div class="mnl-scroll" id="manual-frame"></div></div>
+          <div class="cur"></div>
+        </div>
+      </section>
+
+      <!-- 규정 + AI -->
+      <section class="feat" id="regulations" aria-labelledby="ai-title">
+        <div class="feat-head reveal">
+          <div><p class="kicker"><span data-i="check-circle"></span>규정 · AI에게 물어보기</p><h2 id="ai-title">전화가 오면<br>AI에게 물어봐요</h2></div>
+          <div>
+            <p class="lead">같이 근무하던 선생님이, 전화 응대를 하려면 선생님들이 각자 어떤 일을 맡는지 기본은 알아야 한다고 말씀하셨어요.</p>
+            <p class="lead">그 말을 듣고 이용 규정과 내선번호를 규정 메뉴에 정리하고, 어느 화면에서든 오른쪽 아래 버튼으로 물어볼 수 있게 만들었어요. 답에는 연결할 내선과 근거가 함께 나와요.</p>
+            <p class="note">답이 이상하면 ‘문제가 있어요’를 눌러 알려 주세요. 관리자가 규정 메뉴의 질문 기록에서 확인해요.</p>
+          </div>
+        </div>
+        <div class="demo-bar">
+          <ol class="steps">
+            <li>오른쪽 아래 버튼으로 창 열기</li>
+            <li>문의 내용을 그대로 입력</li>
+            <li>답과 연결할 내선·근거 확인</li>
+          </ol>
+          <button class="replay" type="button"><span data-r></span>AI 시연 다시 보기</button>
+        </div>
+        <div class="stage y" aria-hidden="true">
+          <div class="app frame ai" inert id="ai-frame"></div>
+          <div class="cur"></div>
+        </div>
+      </section>
+
+      <!-- 문의 -->
+      <section class="feat" id="inquiry" aria-labelledby="inquiry-title">
+        <div class="feat-head reveal">
+          <div><p class="kicker"><span data-i="sparkles"></span>개발자에게 문의하기</p><h2 id="inquiry-title">불편한 점은<br>바로 알려 주세요</h2></div>
+          <p class="lead">메뉴 아래 ‘개발자에게 문의하기’에서 새 기능, 기능 개선, 오류를 남기면 개발자에게 바로 알림이 가요. 쓰면서 불편했던 점이 다음 기능이 돼요.</p>
+        </div>
+        <div class="stage n" aria-hidden="true"><div class="app frame" inert id="inquiry-frame"></div></div>
+      </section>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">인천대학교 연속간행물실 근무 대시보드 · 시연 화면의 이름, 일정, 답변은 설명을 위한 예시예요.</div>
+</footer>
+
+<script>
+/* ---------- 공통 ---------- */
+// 실제 프론트 src/icons.json 에서 가져온 아이콘
+const ICONS = {
+  home:'<path d="m3 9 7-6 7 6v8H5V9"/><path d="M8 17v-6h4v6"/>',
+  calendar:'<rect x="3" y="5" width="14" height="12" rx="2"/><path d="M6 3v4m8-4v4M3 9h14m-10 3h2m3 0h1m-6 3h2"/>',
+  message:'<path d="M17 11a6 6 0 0 1-6 6H3l1-4a7 7 0 1 1 13-2Z"/><path d="M7 8h6m-6 3h4"/>',
+  archive:'<path d="M4 7v10h12V7M3 3h14v4H3zM8 11h4"/>',
+  people:'<circle cx="8" cy="7" r="3"/><path d="M2 17v-2c0-4 12-4 12 0v2m-1-13c5 0 5 6 1 6m2 2c2 1 2 3 2 5"/>',
+  book:'<path d="M10 5c-3-2-5-2-8-1v12c3-1 5-1 8 1 3-2 5-2 8-1V4c-3-1-5-1-8 1Zm0 0v12"/>',
+  'check-circle':'<circle cx="10" cy="10" r="7.5"/><path d="m6.8 10.2 2.2 2.2 4.3-4.6"/>',
+  sparkles:'<path d="M8 5c.6 3.1 2.4 4.9 5.5 5.5-3.1.6-4.9 2.4-5.5 5.5-.6-3.1-2.4-4.9-5.5-5.5 3.1-.6 4.9-2.4 5.5-5.5Z"/><path d="M15.5 1.5c.3 1.5 1.2 2.4 2.7 2.7-1.5.3-2.4 1.2-2.7 2.7-.3-1.5-1.2-2.4-2.7-2.7 1.5-.3 2.4-1.2 2.7-2.7Z"/><path d="M16 12.5c.2 1 .8 1.6 1.8 1.8-1 .2-1.6.8-1.8 1.8-.2-1-.8-1.6-1.8-1.8 1-.2 1.6-.8 1.8-1.8Z"/>',
+  search:'<circle cx="9" cy="9" r="5.5"/><path d="m13 13 4 4"/>',
+  chevron:'<path d="m8 5 5 5-5 5"/>',
+  left:'<path d="m12 5-5 5 5 5"/>',
+  phone:'<path d="M5 3h3l1.5 4-2 1.5a10 10 0 0 0 4 4l1.5-2 4 1.5v3a2 2 0 0 1-2 2A14 14 0 0 1 3 5a2 2 0 0 1 2-2Z"/>',
+  undo:'<path d="M7 4 4 7l3 3"/><path d="M4 7h8a4 4 0 0 1 0 8H8"/>',
+  check:'<path d="m4 10 4 4 8-8"/>',
+  user:'<circle cx="10" cy="7" r="3.5"/><path d="M3.5 17c0-3.5 3-5.5 6.5-5.5s6.5 2 6.5 5.5"/>',
+  swap:'<path d="M4 7h12l-3-3M16 13H4l3 3"/>',
+  megaphone:'<path d="M4 8v4h3l6 3V5L7 8H4Z"/><path d="M16 8.5a2.5 2.5 0 0 1 0 3"/>',
+  link:'<path d="M8.5 11.5a3.5 3.5 0 0 0 5 0l2.5-2.5a3.5 3.5 0 0 0-5-5l-1 1"/><path d="M11.5 8.5a3.5 3.5 0 0 0-5 0L4 11a3.5 3.5 0 0 0 5 5l1-1"/>'
+};
+const ic = n => '<svg viewBox="0 0 20 20" aria-hidden="true">' + ICONS[n] + '</svg>';
+const REPLAY = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4v4h4"/></svg>';
+document.querySelectorAll('[data-i]').forEach(el => el.innerHTML = ic(el.dataset.i));
+document.querySelectorAll('[data-r]').forEach(el => el.outerHTML = REPLAY);
+document.querySelectorAll('.cur').forEach(c => c.innerHTML =
+  '<svg class="ar" width="24" height="24" viewBox="0 0 24 24"><path d="M4 2l16 9.6-7.2 1.6-3.6 6.8z" fill="#191f28" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/></svg>' +
+  '<svg class="rs" width="22" height="22" viewBox="0 0 24 24"><path d="M12 2l5 6h-3.4v8H17l-5 6-5-6h3.4V8H7z" fill="#191f28" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/></svg>' +
+  '<svg class="gb" width="22" height="22" viewBox="0 0 24 24"><path d="M12 2v20M2 12h20M12 2l-3 3m3-3 3 3M12 22l-3-3m3 3 3-3M2 12l3-3m-3 3 3 3M22 12l-3-3m3 3-3 3" fill="none" stroke="#fff" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 2v20M2 12h20M12 2l-3 3m3-3 3 3M12 22l-3-3m3 3 3-3M2 12l3-3m-3 3 3 3M22 12l-3-3m3 3-3 3" fill="none" stroke="#191f28" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><i></i>');
+
+const RM = matchMedia('(prefers-reduced-motion: reduce)');
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+/* ---------- 첫 멘트 타이핑 ---------- */
+(async () => {
+  if (RM.matches) return;
+  const lines = [...document.querySelectorAll('.hero h1, .hero-sub')].map(el => {
+    const sr = document.createElement('span'), vis = document.createElement('span');
+    sr.className = 'sr-only'; sr.textContent = [...el.childNodes].map(n => n.nodeName === 'BR' ? ' ' : n.textContent).join('');
+    vis.setAttribute('aria-hidden', 'true'); vis.append(...el.childNodes);
+    const walk = document.createTreeWalker(vis, NodeFilter.SHOW_TEXT), texts = [];
+    while (walk.nextNode()) texts.push(walk.currentNode);
+    const chars = [];
+    for (const t of texts) t.replaceWith(...[...t.data].map(c => {
+      const ch = document.createElement('span'); ch.className = 'ch'; ch.textContent = c; chars.push(ch); return ch;
+    }));
+    el.append(sr, vis); el.classList.add('ty');
+    return chars;
+  });
+  let prev;
+  const show = ch => { prev?.classList.remove('at'); ch.classList.add('on', 'at'); prev = ch; };
+  await sleep(350);
+  for (const ch of lines[0]) { show(ch); await sleep(ch.textContent === ' ' ? 40 : 95); }
+  await sleep(450);
+  for (const ch of lines[1]) { show(ch); await sleep(32); }
+  await sleep(2600);
+  prev.classList.remove('at');
+})();
+const esc = s => s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const time = m => String(m / 60 | 0).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0');
+const badge = (text, color) => '<span class="tds-badge c-' + color + '">' + text + '</span>';
+const pageTop = ({upper = '', title, lower = '', brand = false, actions = ''}) =>
+  '<header class="page-top"><div class="page-top-text">' + (upper && '<div class="page-top-upper">' + upper + '</div>') +
+  '<h1 class="page-top-title">' + title + '</h1>' + (lower && '<p class="page-top-lower' + (brand ? ' is-brand' : '') + '">' + lower + '</p>') +
+  '</div>' + (actions && '<div class="page-top-actions">' + actions + '</div>') + '</header>';
+const listRow = ({icon = '', tone = 'grey', title, sub = '', sub2 = '', right = ''}) =>
+  '<div class="list-row"><span class="list-row-main">' + (icon && '<span class="list-row-icon tone-' + tone + '">' + ic(icon) + '</span>') +
+  '<span class="list-row-text"><span class="list-row-title">' + title + '</span>' + (sub && '<span class="list-row-sub">' + sub + '</span>') +
+  (sub2 && '<span class="list-row-sub">' + sub2 + '</span>') + '</span></span>' + (right && '<span class="list-row-right">' + right + '</span>') + '</div>';
+const listHeader = (title, tail = '', tag = 'h2') => '<div class="list-header size-s"><' + tag + '>' + title + '</' + tag + '>' + (tail && '<div class="list-header-tail">' + tail + '</div>') + '</div>';
+const chevron = '<span class="tds-chevron">' + ic('chevron') + '</span>';
+const adminMenu = (items = '') => '<span class="page-top-admin"><details class="menu admin-menu"><summary>관리' + ic('chevron') + '</summary><div class="menu-list">' + items + '</div></details></span>';
+const check = on => '<input type="checkbox" class="tds-check"' + (on ? ' checked' : '') + ' tabindex="-1">';
+// 실제 markdown.ts highlight(): 긴 단어부터 맞춰 칠한다
+function marked(text, words) {
+  if (!words.length) return esc(text);
+  const re = new RegExp('(' + [...words].sort((a, b) => b.length - a.length).map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|') + ')', 'gi');
+  return text.split(re).map((p, i) => i % 2 ? '<mark>' + esc(p) + '</mark>' : esc(p)).join('');
+}
+
+/* ---------- 예시 데이터 ---------- */
+const STAFF = {1:'가람', 2:'다온', 3:'하늘', 4:'서윤', 5:'지우', 6:'도윤', 7:'예린'};
+const DATES = [16, 17, 18, 19, 20], DAYS = ['월', '화', '수', '목', '금'], TODAY = 4, NOW = 630;
+// 확정표 (요일 0~4). role: desk 데스크 / general 대기
+const CONFIRMED = [
+  [1,0,540,780,'desk'],[3,0,780,1020,'desk'],[5,0,1020,1320,'desk'],[4,0,600,840,'general'],
+  [2,1,540,780,'desk'],[1,1,780,1020,'desk'],[4,1,1020,1320,'desk'],[3,1,840,1080,'general'],
+  [3,2,540,780,'desk'],[2,2,780,1020,'desk'],[5,2,1020,1320,'desk'],[1,2,600,780,'general'],
+  [1,3,540,780,'desk'],[3,3,780,1020,'desk'],[4,3,1020,1320,'desk'],[2,3,900,1080,'general'],
+  [2,4,540,780,'desk'],[1,4,780,1020,'desk'],[5,4,1020,1320,'desk'],[4,4,600,840,'general']
+].map(([staff, day, start, end, role], i) => ({id: i + 1, staff, day, start, end, role}));
+
+/* ---------- 시간표 그리기 (실제 Schedule.tsx의 layout/changes/DayTrack과 같은 규칙) ---------- */
+function layout(entries) {
+  const result = []; let lanes = 0;
+  for (const role of ['desk', 'general']) {
+    const ends = [];
+    for (const s of entries.filter(s => s.role === role).sort((a, b) => a.start - b.start || a.end - b.end || a.id - b.id)) {
+      let lane = ends.findIndex(e => e <= s.start); if (lane < 0) lane = ends.length;
+      ends[lane] = s.end; result.push({...s, lane: lanes + lane});
+    }
+    lanes += Math.max(1, ends.length);
+  }
+  return {entries: result, lanes};
+}
+function changes(shifts, day) {
+  const left = CONFIRMED.filter(c => c.day === day), changed = new Set();
+  for (const s of shifts) {
+    const i = left.findIndex(c => c.staff === s.staff && c.start === s.start && c.end === s.end && c.role === s.role);
+    if (i < 0) changed.add(s.id); else left.splice(i, 1);
+  }
+  return changed;
+}
+function board(shifts, {flash = [], dragging = null, compare = true} = {}) {
+  const axis = '<div class="sch-axis"><div class="sch-day-head"></div><div class="sch-axis-ticks">' +
+    Array.from({length: 14}, (_, i) => '<span style="top:' + (i / 13 * 100) + '%">' + time(540 + i * 60) + '</span>').join('') + '</div></div>';
+  return '<div class="sch-board" style="--slots:26">' + axis + DAYS.map((d, day) => {
+    const own = shifts.filter(s => s.day === day), placed = layout(own);
+    const changed = compare && own.length ? changes(own, day) : new Set();
+    return '<section class="sch-day' + (day === TODAY ? ' is-today' : '') + '"><h3 class="sch-day-head"><small>' + d + '</small><span class="sch-date">' + DATES[day] + '</span></h3>' +
+      '<div class="sch-track can-add" style="--lanes:' + placed.lanes + '" data-day="' + day + '">' +
+      placed.entries.map(s => {
+        const span = (s.end - s.start) / 30;
+        return '<button type="button" tabindex="-1" data-id="' + s.id + '" class="sch-block ' + (s.role === 'desk' ? 'is-desk' : 'is-standby') +
+          (span === 1 ? ' is-short' : '') + (changed.has(s.id) ? ' is-changed' : '') + ' is-editable is-movable' +
+          (flash.includes(s.id) ? ' is-flash' : '') + (dragging === s.id ? ' is-dragging' : '') +
+          '" style="grid-row:' + ((s.start - 540) / 30 + 1) + '/span ' + span + ';grid-column:' + (s.lane + 1) + '">' +
+          '<strong>' + STAFF[s.staff] + '</strong>' + (span > 1 ? '<small>' + time(s.start) + '–' + time(s.end) + '</small>' : '') +
+          '<span class="sch-handle start"></span><span class="sch-handle end"></span></button>';
+      }).join('') +
+      (own.length ? '' : '<span class="sch-empty">근무가 없어요</span>') +
+      (day === TODAY ? '<span class="sch-now" style="top:' + ((NOW - 540) / 780 * 100) + '%"></span>' : '') +
+      '</div></section>';
+  }).join('') + '</div>';
+}
+const schHead = (person = true) => '<div class="sch-head"><div class="sch-week">' +
+  '<button type="button" class="sch-nav" tabindex="-1">' + ic('left') + '</button><strong class="sch-title">11월 3째주</strong><span class="sch-range">11.16 ~ 11.20</span>' +
+  '<button type="button" class="sch-nav" tabindex="-1">' + ic('chevron') + '</button></div>' +
+  '<div class="sch-legend">' + badge('데스크', 'blue') + badge('대기', 'yellow') + badge('확정표와 다름', 'red') + '</div>' +
+  (person ? '<details class="menu admin-menu sch-person"><summary>모든 근무자' + ic('chevron') + '</summary></details>' : '') + '</div>';
+
+/* ---------- 매뉴얼·챗봇 공용 ---------- */
+const WORDS = ['잡지', '대출'];
+// 실제 매뉴얼에서 search()로 뽑은 결과 (입력 중인 글자마다)
+const RESULTS = {
+  '잡': [["2 오픈 업무 › 2.1 오픈 순서","…결통로 문 열기 데스크 컴퓨터, 도서검색대, 소독기, 잡지 쪽 컴퓨터 전원 켜기 스터디룸 불 켜기 중앙관 2층 복도 불이 꺼져 있으면 켜기 신문 최신화 작업하기 (→ 2.3) 데스크 컴퓨터 설정 솔라스(SOLAS) …"],["4 연속간행물 자료 관리 › 4.4 잡지 체크인 및 배가 (입수 시)","…담당 선생님께 드리기 (컴퓨터로 체크인해 주심) 잡지를 돌려받으면 맨 뒷장에 태깅 스티커와 인천대 스티커 붙이기 알맞은 잡지 칸에 꽂기 (「1층 비치 서가」라고 써 있으면 1층에 꽂기)"],["4 연속간행물 자료 관리 › 4.7 잡지 대출 방법","… 계속자료관리 > 이슈관리 > 입수 「서명」에 대출할 잡지 이름 입력 → 해당 호 더블클릭 입수 검색 화면 대출반납 → 대출자 정보 입력 → 반납예정일을 현재일 기준 2주 뒤로 수정 → 대출 입수 상세 화면 대출반납…"],["4 연속간행물 자료 관리 › 4.8 잡지 반납 방법","…나를 고르기: 4.7 절차를 반납으로 바꿔 진행한 뒤 잡지를 보안설정해서 꽂아 놓기 계속자료관리 → 부가기능 → 대출반납에서 일괄반납 처리 후 보안설정해서 꽂아 놓기 일괄반납 화면"],["6 기타 자료 및 시스템 업무 › 6.2 job library 자료 정리","잡 라이브러리 책이 들어오면 데스크 좌측 원형 테이블에 번호 순서대로 꽂기 자리가 없으면 연도가 낮은 책을 뽑아 스터디가든 쪽 잡 라이브러리에 꽂기"],["6 기타 자료 및 시스템 업무 › 6.4 잡지 제본","제본된 잡지가 오면 청구기호에 맞는 칸에 넣기"],["7 이용자 응대 › 7.1 도서관 이용 관련 안내","…층 (500~900번대) 연속간행물실 자료 (참고서, 잡지, 신문) 대출 불가, 열람만 가능 자료보존실·기증자료 대여 책 청구기호를 보고 속한 층의 카운터로 휴학·자퇴 신청 도장 4층 토익 등 증명서 출력, 국회도서…"],["9 기타 › 9.2 비품","…뒤편 사물함 확인 → 없으면 1층 사무실에서 받아오기 잡지 스티커가 떨어지면 지하 1층 정리실에서 받아오기"]],
+  '잡지 대': [["2 오픈 업무 › 2.1 오픈 순서","…수!) 출근하면서 정문 입구에서 신문, 택배함 쪽 상호대차 가방 가져오기 이룸관 연결통로 문 열기 데스크 컴퓨터, 도서검색대, 소독기, 잡지 쪽 컴퓨터 전원 켜기 스터디룸 불 켜기 중앙관 2층 복도 불이 꺼져 있으면…"],["4 연속간행물 자료 관리 › 4.4 잡지 체크인 및 배가 (입수 시)","…담당 선생님께 드리기 (컴퓨터로 체크인해 주심) 잡지를 돌려받으면 맨 뒷장에 태깅 스티커와 인천대 스티커 붙이기 알맞은 잡지 칸에 꽂기 (「1층 비치 서가」라고 써 있으면 1층에 꽂기)"],["4 연속간행물 자료 관리 › 4.7 잡지 대출 방법","⚠ 시민, 재학생은 불가. 교수, 직원, 조교만 가능 대출 대장 작성 요청 솔라스 → 계속자료관리 → 이슈관리 → 입수 솔라스 메뉴: 계속자료관리 > 이슈관리 > 입수 「서명」에 대출할 잡지 이름 입력 → 해당 호 …"],["4 연속간행물 자료 관리 › 4.8 잡지 반납 방법","…나를 고르기: 4.7 절차를 반납으로 바꿔 진행한 뒤 잡지를 보안설정해서 꽂아 놓기 계속자료관리 → 부가기능 → 대출반납에서 일괄반납 처리 후 보안설정해서 꽂아 놓기 일괄반납 화면"],["7 이용자 응대 › 7.1 도서관 이용 관련 안내","…도서 4층 (제2자료실) 예약도서 1층 안내데스크 책 대출/반납 3층 (0~400번대), 4층 (500~900번대) 연속간행물실 자료 (참고서, 잡지, 신문) 대출 불가, 열람만 가능 자료보존실·기증자료 대여 책 청…"]],
+  '잡지 대출': [["4 연속간행물 자료 관리 › 4.7 잡지 대출 방법","⚠ 시민, 재학생은 불가. 교수, 직원, 조교만 가능 대출 대장 작성 요청 솔라스 → 계속자료관리 → 이슈관리 → 입수 솔라스 메뉴: 계속자료관리 > 이슈관리 > 입수 「서명」에 대출할 잡지 이름 입력 → 해당 호 …"],["4 연속간행물 자료 관리 › 4.8 잡지 반납 방법","…나를 고르기: 4.7 절차를 반납으로 바꿔 진행한 뒤 잡지를 보안설정해서 꽂아 놓기 계속자료관리 → 부가기능 → 대출반납에서 일괄반납 처리 후 보안설정해서 꽂아 놓기 일괄반납 화면"],["7 이용자 응대 › 7.1 도서관 이용 관련 안내","…도서 4층 (제2자료실) 예약도서 1층 안내데스크 책 대출/반납 3층 (0~400번대), 4층 (500~900번대) 연속간행물실 자료 (참고서, 잡지, 신문) 대출 불가, 열람만 가능 자료보존실·기증자료 대여 책 청…"]]
+};
+RESULTS['잡지'] = RESULTS['잡'].filter(r => !r[0].includes('job library'));
+RESULTS['잡지 '] = RESULTS['잡지'];
+const resultsBox = (q, list = RESULTS[q]) => {
+  const words = q.toLowerCase().split(/\s+/).filter(Boolean);
+  return '<div class="mnl-results"><ul>' + list.map(([path, snip]) =>
+    '<li><button type="button" tabindex="-1"><span class="mnl-result-path">' + marked(path, words) +
+    '</span><span class="mnl-result-snippet">' + marked(snip, words) + '</span></button></li>').join('') + '</ul></div>';
+};
+const searchField = (placeholder, value = '') => '<div class="mnl-searchbox"><label class="mnl-search">' + ic('search') +
+  '<input type="search" tabindex="-1" readonly placeholder="' + placeholder + '" value="' + esc(value) + '">' + (value ? '' : '<kbd>/</kbd>') + '</label></div>';
+const toc = chapters => '<section class="tds-card mnl-toc">' + listHeader('목차') + '<ul class="mnl-chapters">' + chapters.map(([stars, name, sub]) =>
+  '<li>' + listRow({icon: 'book', title: name, sub, right: stars >= 3 ? badge('꼭 읽기', 'yellow') : chevron}) + '</li>').join('') + '</ul></section>';
+const chips = names => listHeader('상황별 바로가기') + '<div class="tds-chips mnl-chips">' + names.map(n => '<button type="button" tabindex="-1">' + n + '</button>').join('') + '</div>';
+const avatar = '<img class="chatbot-avatar" src="chatbot.png" alt="" width="36" height="36">';
+const bot = html => '<div class="chatbot-bot">' + avatar + '<div class="chatbot-bot-body"><span class="chatbot-name">AI 도우미</span>' + html + '</div></div>';
+// 백엔드 ChatbotClient 형식: 요약 한 줄 + "제목: 내용" 항목 + 연결 내선 + 근거
+const QUESTION = '상호대차는 어디로 문의해?';
+const ANSWER = {
+  summary: '상호대차는 연속간행물실에서 담당해요.',
+  points: [['이용', '다른 기관 책을 학산도서관에서 받아 14일'], ['연장', '7일 연장 가능']],
+  ext: [['9419', '연속간행물실(중앙관 2F)']],
+  sections: ['0. 내선번호 빠른 찾기 > 연구·연속간행물', '3. 이용자별 안내 > 재학생·대학원생·교직원 공통']
+};
+const answerCard = () => '<article class="chatbot-turn"><p class="chat-bubble is-mine">' + QUESTION + '</p>' + bot(
+  '<div class="chat-bubble chatbot-answer"><p class="answer-summary">' + ANSWER.summary + '</p><ul class="answer-points">' +
+  ANSWER.points.map(([k, v]) => '<li><b>' + k + '</b> ' + v + '</li>').join('') + '</ul>' +
+  ANSWER.ext.map(([n, p]) => '<p class="chatbot-ext">' + ic('phone') + '연결: <strong>' + n + '</strong> ' + p + '</p>').join('') +
+  '<small class="chatbot-src">근거: ' + ANSWER.sections.join(', ') + '</small></div>' +
+  '<button type="button" class="text-btn chatbot-flag-btn" tabindex="-1">문제가 있어요</button>') + '</article>';
+
+/* ---------- 첫 화면 ---------- */
+// 첫 멘트 둘레의 유리 아이콘 네 개: 흰 유리 판 뒤에 파란 도형이 비켜 놓인 모양
+const star = (cx, cy, r, k = .2) => {
+  const q = r * k;
+  return 'M' + cx + ' ' + (cy - r) + 'Q' + (cx + q) + ' ' + (cy - q) + ' ' + (cx + r) + ' ' + cy + 'Q' + (cx + q) + ' ' + (cy + q) + ' ' + cx + ' ' + (cy + r) +
+    'Q' + (cx - q) + ' ' + (cy + q) + ' ' + (cx - r) + ' ' + cy + 'Q' + (cx - q) + ' ' + (cy - q) + ' ' + cx + ' ' + (cy - r) + 'Z';
+};
+const pane = (shape, lift = 'hi-lift') => '<g filter="url(#' + lift + ')">' + shape.replace('/>', ' fill="url(#hi-tile)"/>') + '</g>' + shape.replace('/>', ' fill="none" stroke="url(#hi-edge)" stroke-width=".9"/>');
+const hsvg = s => '<svg viewBox="0 0 48 48">' + s + '</svg>';
+const HERO_DEFS = '<svg width="0" height="0" style="position:absolute"><defs>' +
+  '<linearGradient id="hi-blue" x1=".15" y1="0" x2=".85" y2="1"><stop offset="0" stop-color="#6FAEFF"/><stop offset="1" stop-color="#2A73EA"/></linearGradient>' +
+  '<linearGradient id="hi-bar" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#3C86F4"/><stop offset="1" stop-color="#5C9DFA"/></linearGradient>' +
+  '<linearGradient id="hi-tile" x1=".2" y1="0" x2=".7" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#E7EEF9"/></linearGradient>' +
+  '<linearGradient id="hi-edge" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#FFFFFF" stop-opacity=".35"/></linearGradient>' +
+  '<filter id="hi-blur" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="2.4"/></filter>' +
+  '<filter id="hi-lift" x="-30%" y="-30%" width="160%" height="170%"><feDropShadow dx="0" dy="1.6" stdDeviation="1.6" flood-color="#2A5FB8" flood-opacity=".2"/></filter>' +
+  '<filter id="hi-lift-star" x="-30%" y="-30%" width="160%" height="170%"><feDropShadow dx="0" dy="1.8" stdDeviation="1.8" flood-color="#2A5FB8" flood-opacity=".3"/></filter>' +
+  '<clipPath id="hi-lens" clipPathUnits="userSpaceOnUse"><circle cx="20" cy="22" r="10.6"/></clipPath></defs></svg>';
+const HERO_ICONS = [
+  // 신문
+  hsvg('<rect x="19" y="3.5" width="22.5" height="22.5" rx="6.5" fill="url(#hi-blue)"/>' + pane('<rect x="4" y="12" width="29" height="29" rx="8"/>') +
+    '<rect x="9" y="19" width="19" height="4.2" rx="2.1" fill="url(#hi-bar)"/>' +
+    '<rect x="9" y="26.4" width="7.6" height="2.8" rx="1.4" fill="#86B5F8"/><rect x="18.6" y="26.4" width="9.4" height="2.8" rx="1.4" fill="#86B5F8"/>' +
+    '<rect x="9" y="31.6" width="7.6" height="2.8" rx="1.4" fill="#A3C6FA"/><rect x="18.6" y="31.6" width="9.4" height="2.8" rx="1.4" fill="#A3C6FA"/>'),
+  // AI에게 물어보기: 별 세 개
+  hsvg('<path d="' + star(37.5, 10.5, 8.2, .19) + '" fill="url(#hi-blue)"/><path d="' + star(39.5, 33.5, 5, .19) + '" fill="url(#hi-blue)"/>' +
+    pane('<path d="' + star(16.5, 26, 14.5, .21) + '"/>', 'hi-lift-star')),
+  // 시간표
+  hsvg('<rect x="19" y="3.5" width="22.5" height="22.5" rx="6.5" fill="url(#hi-blue)"/>' + pane('<rect x="4" y="13" width="30" height="28" rx="8"/>') +
+    '<rect x="4.6" y="20" width="28.8" height=".9" fill="#D9E4F3"/>' +
+    '<rect x="10" y="9" width="3.2" height="7" rx="1.6" fill="url(#hi-blue)"/><rect x="24.8" y="9" width="3.2" height="7" rx="1.6" fill="url(#hi-blue)"/>' +
+    '<rect x="9" y="25.5" width="6.2" height="6.2" rx="1.9" fill="#82B2F8"/><rect x="16.4" y="25.5" width="6.2" height="6.2" rx="1.9" fill="#2F7BEE"/><rect x="23.8" y="25.5" width="6.2" height="6.2" rx="1.9" fill="#82B2F8"/>'),
+  // 검색
+  hsvg('<circle cx="30.5" cy="15" r="10" fill="url(#hi-blue)"/>' +
+    '<path d="M28.6 30.6L37.6 39.6" stroke="url(#hi-blue)" stroke-width="5.2" stroke-linecap="round"/>' +
+    '<g clip-path="url(#hi-lens)"><g filter="url(#hi-blur)"><circle cx="30.5" cy="15" r="10" fill="url(#hi-blue)"/></g><rect width="48" height="48" fill="#fff" fill-opacity=".5"/></g>' +
+    '<g filter="url(#hi-lift)"><circle cx="20" cy="22" r="12.2" fill="none" stroke="url(#hi-tile)" stroke-width="3.2"/></g>' +
+    '<circle cx="20" cy="22" r="13.8" fill="none" stroke="#fff" stroke-opacity=".7" stroke-width=".6"/>' +
+    '<path d="M12.6 20.4A7.6 7.6 0 0 1 18.2 14.6" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/>')
+];
+const HERO_POS = [[8.4, 19.6], [91.2, 18.6], [9.4, 74.8], [90.4, 74.4]];
+const heroIcons = document.querySelector('.hero-icons');
+heroIcons.innerHTML = HERO_DEFS + HERO_ICONS.map((s, i) => '<div class="hero-ic" style="left:' + HERO_POS[i][0] + '%;top:' + HERO_POS[i][1] + '%"><div><div>' + s + '</div></div></div>').join('');
+// 아래 멀리서 흐릿하게 기울어진 채 솟아올라 또렷하게 서고, 이후 제자리에서 살짝 둥실
+if (!RM.matches) {
+  const h = heroIcons.clientHeight;
+  heroIcons.querySelectorAll('.hero-ic').forEach((ic, i) => {
+    const bob = ic.firstElementChild, rise = bob.firstElementChild;
+    const a = rise.animate([
+      {opacity: 0, transform: 'translateY(' + (h * .7) + 'px) rotate(' + (i % 2 ? 14 : -14) + 'deg)', filter: 'blur(10px)'},
+      {opacity: 1, transform: 'translateY(0) rotate(0deg)', filter: 'blur(0px)'}
+    ], {duration: 1500, delay: 250 + i * 200, easing: 'cubic-bezier(.22,.8,.24,1)', fill: 'both'});
+    a.finished.then(() => {
+      a.cancel(); // 마지막 장면과 같아 보이므로 걷어 내고 둥실 움직임으로 넘긴다
+      bob.animate([{transform: 'translateY(0)'}, {transform: 'translateY(-' + Math.max(4, h * .012) + 'px)'}], {duration: 2600 + i * 350, delay: i * 200, direction: 'alternate', iterations: Infinity, easing: 'ease-in-out'});
+    }).catch(() => {});
+  });
+}
+
+// 첫 화면 아래 기울어진 서비스 화면 세 장
+document.getElementById('hero-sch').innerHTML = schHead(false) + '<div class="sch-scroll">' +
+  board([...CONFIRMED, {id: 99, staff: 4, day: 2, start: 900, end: 990, role: 'general'}]) + '</div>';
+document.getElementById('hero-sr').innerHTML = searchField('', '잡지 대출') + resultsBox('잡지 대출', RESULTS['잡지 대출'].slice(0, 2));
+document.getElementById('hero-ai').innerHTML = answerCard();
+const layers = document.querySelector('.layers'), inner = layers.firstElementChild;
+function fit() {
+  const w = layers.clientWidth, narrow = w < 720, bw = narrow ? 600 : 1060, bh = narrow ? 640 : 620, k = Math.min(1, w / bw);
+  layers.classList.toggle('narrow', narrow);
+  inner.style.width = bw + 'px'; inner.style.height = bh + 'px';
+  inner.style.transform = 'translateX(-50%) scale(' + k + ')';
+  layers.style.height = bh * k + 'px';
+}
+fit(); addEventListener('resize', fit);
+new IntersectionObserver((es, o) => { if (es[0].isIntersecting) { es[0].target.classList.add('in'); o.disconnect(); } }, {threshold: .15}).observe(document.querySelector('.hero-layers'));
+
+/* ---------- 정적 화면: 홈 · 이슈 · 인적관리 · 문의 ---------- */
+const issueRow = ([icon, title, sub, done]) => '<article class="issue-row' + (done ? ' is-done' : '') + '"><button type="button" class="issue-row-main" tabindex="-1">' +
+  (icon ? '<span class="list-row-icon">' + ic(icon) + '</span>' : '') + '<span class="list-row-text"><span class="list-row-title issue-title">' + title + '</span><span class="list-row-sub">' + sub + '</span></span></button>' +
+  '<details class="menu issue-menu"><summary>⋯</summary></details><label class="issue-check">' + check(done) + '</label></article>';
+// 실제 이슈 화면(넓은 화면)은 구분 아이콘 없이 보여준다. 아이콘은 홈의 오늘 할 일에만 있다
+const plainIssue = ([, ...rest]) => issueRow(['', ...rest]);
+const TODAY_ISSUES = [['swap', '신착 잡지 인계', '인계 · 오늘 09:00', false], ['megaphone', '마감 때 창문 확인', '공지 · 오늘 10:12', false]];
+const person = n => {
+  const s = CONFIRMED.find(s => s.day === TODAY && s.staff === n), desk = s.role === 'desk';
+  return listRow({icon: 'user', title: STAFF[n], sub: time(s.start) + '–' + time(s.end), right: badge(desk ? '데스크' : '대기', desk ? 'blue' : 'yellow')});
+};
+document.getElementById('home-frame').innerHTML = '<section class="view home">' +
+  pageTop({upper: '11월 20일 금요일', title: '지금 데스크는 다온님이 지키고 있어요', lower: '13:00에 가람님으로 바뀌어요', brand: true}) +
+  '<div class="home-grid"><div class="home-col">' +
+  '<section class="tds-card home-card">' + listHeader('지금 근무 중', '10:30 기준') + person(2) + person(4) + '</section>' +
+  '<section class="tds-card home-card">' + listHeader('오늘 할 일 2', '<button type="button" class="home-more" tabindex="-1">주간 이슈' + chevron + '</button>') +
+  '<div class="today-issues">' + TODAY_ISSUES.map(issueRow).join('') + '</div><div class="home-card-foot"><button type="button" class="text-btn home-add" tabindex="-1">+ 이슈 남기기</button></div></section>' +
+  '</div><div class="home-col">' +
+  '<section class="tds-card home-card">' + listHeader('오늘의 당직') + listRow({icon: 'phone', title: '담당 사서 선생님', sub: '연속간행물실'}) +
+  '<div class="home-card-foot"><button type="button" class="btn home-wide" tabindex="-1">수정</button></div></section>' +
+  '<section class="tds-card home-card">' + listHeader('다음 근무', '<span class="home-next-at">13:00</span>') +
+  listRow({icon: 'user', title: '가람', right: badge('데스크', 'blue')}) + '</section>' +
+  '</div></div></section>';
+
+const dayCard = (i, rows) => '<section class="tds-card issue-day' + (i === TODAY ? ' is-today' : '') + '"><header class="issue-day-head"><h2>' + DAYS[i] + ' 11.' + DATES[i] + '</h2>' + (i === TODAY ? '<span>오늘</span>' : '') + '</header>' +
+  (rows.length ? rows.map(plainIssue).join('') : '<p class="issue-empty">이슈가 없어요.</p>') + '</section>';
+document.getElementById('issues-frame').innerHTML = '<section class="view issues-view">' +
+  pageTop({title: '이슈', lower: '이번 주에 4건이 남아 있어요', actions: '<div class="week-controls"><button type="button" class="icon-btn" tabindex="-1">' + ic('left') + '</button><strong class="current-week">11월 3째주</strong><button type="button" class="icon-btn" tabindex="-1">' + ic('chevron') + '</button></div><button type="button" class="btn primary" tabindex="-1">이슈 남기기</button>'}) +
+  '<section class="tds-card issue-day"><header class="issue-day-head"><h2>주간 이슈</h2></header>' + plainIssue(['megaphone', '2층 열람실 조명 교체 공사', '공지 · 11.18 ~ 11.21', false]) + '</section>' +
+  '<div class="issue-week">' + [
+    [['swap', '신착 잡지 체크인 남음', '인계 · 11.16 18:10', true]],
+    [],
+    [['swap', '복사 용지 보충함', '인계 · 11.18 14:20', true]],
+    [['swap', '택배 가방 2개 도착', '인계 · 11.19 16:40', false]],
+    TODAY_ISSUES
+  ].map((rows, i) => dayCard(i, rows)).join('') + '</div></section>';
+
+document.getElementById('people-frame').innerHTML = '<section class="view people">' +
+  pageTop({title: '인적관리', lower: '근무자와 선생님 연락처예요. 이름을 누르면 정보를 고칠 수 있어요.'}) +
+  '<div class="people-grid"><section class="tds-card">' + listHeader('근로 7명', '<button type="button" class="text-btn people-add" tabindex="-1">근무자 추가' + chevron + '</button>') +
+  Object.keys(STAFF).map((id, i) => listRow({icon: 'user', title: STAFF[id], sub: '010-' + (2300 + i * 117) + '-' + (4100 + i * 331), right: '<span class="btn weak small people-call">전화</span>'})).join('') +
+  '</section><section class="tds-card">' + listHeader('선생님 2명', '<button type="button" class="text-btn people-add" tabindex="-1">선생님 추가' + chevron + '</button>') +
+  listRow({icon: 'user', title: '담당 사서 · 사서', sub: '연속간행물실', sub2: '휴대폰 미등록'}) +
+  listRow({icon: 'user', title: '당직 사서 · 주무관', sub: '연속간행물실', sub2: '휴대폰 미등록'}) + '</section></div></section>';
+
+document.getElementById('inquiry-frame').innerHTML = '<div style="display:grid;place-items:center;padding:12px 0"><div class="dialog" open style="box-shadow:0 24px 60px -18px rgba(0,27,55,.25)">' +
+  '<div class="dialog-head"><h2>문의 남기기</h2><button type="button" tabindex="-1">×</button></div>' +
+  '<fieldset class="field choice-chips"><legend>유형</legend><div>' + ['새 기능', '기능 개선', '오류', '기타'].map((k, i) =>
+    '<label><input type="radio" name="kind" tabindex="-1"' + (i === 1 ? ' checked' : '') + '>' + k + '</label>').join('') + '</div></fieldset>' +
+  '<label class="field">제목<input tabindex="-1" readonly value="시간표에서 내 근무만 골라 보고 싶어요"></label>' +
+  '<label class="field">내용<textarea tabindex="-1" readonly placeholder="어느 화면에서 무엇을 했더니 어떻게 됐는지 적어 주세요"></textarea></label>' +
+  '<p class="hint">보내면 개발자에게 바로 알림이 가요.</p>' +
+  '<div class="form-actions"><button type="button" class="btn" tabindex="-1">취소</button><button type="button" class="btn primary" tabindex="-1">보내기</button></div></div></div>';
+
+/* ---------- 시연 실행기 ---------- */
+// 단계 표시·다시 보기·화면에 들어오면 자동 재생. 다시 보기를 누르면 이전 실행은 'stop'을 던지고 멈춘다.
+function demo(sec, cfg) {
+  const stage = sec.querySelector('.stage'), cur = stage.querySelector('.cur');
+  const items = [...sec.querySelectorAll('.steps li')];
+  let run = 0;
+  const mark = i => items.forEach((li, j) => { li.classList.toggle('done', j < i); li.classList.toggle('on', j === i); });
+  const x = {stage, $: q => stage.querySelector(q), $$: q => [...stage.querySelectorAll(q)]};
+  const rel = (el, fx = .5, fy = .5) => {
+    const s = stage.getBoundingClientRect(), r = el.getBoundingClientRect();
+    return [r.left - s.left + r.width * fx, r.top - s.top + r.height * fy];
+  };
+  x.rel = rel;
+  x.park = (fx, fy) => { if (!cur) return; cur.classList.remove('show', 'resize', 'grab'); cur.style.setProperty('--cd', '0ms'); cur.style.setProperty('--x', stage.clientWidth * fx + 'px'); cur.style.setProperty('--y', stage.clientHeight * fy + 'px'); };
+  x.hide = () => cur && cur.classList.remove('show');
+  x.cursor = mode => { cur.classList.remove('resize', 'grab'); if (mode) cur.classList.add(mode); };
+  async function play() {
+    const id = ++run, c = Object.create(x);
+    const w = c.w = async ms => { await sleep(ms); if (id !== run) throw 'stop'; };
+    c.live = () => id === run;
+    c.move = async (px, py, d = 700) => {
+      cur.style.setProperty('--cd', d + 'ms'); cur.style.setProperty('--x', px + 'px'); cur.style.setProperty('--y', py + 'px');
+      cur.classList.add('show'); await w(d + 40);
+    };
+    c.to = (el, fx, fy, d) => c.move(...rel(el, fx, fy), d);
+    c.click = async el => {
+      cur.classList.remove('tap'); void cur.offsetWidth; cur.classList.add('tap');
+      if (el) el.classList.add('t-press');
+      await w(200); if (el) el.classList.remove('t-press'); await w(80);
+    };
+    c.type = async (text, put, ms) => {
+      if (RM.matches) { put(text); return w(400); }
+      const chars = Array.from(text);
+      for (let i = 1; i <= chars.length; i++) { put(chars.slice(0, i).join('')); await w(ms); }
+    };
+    cfg.reset(c);
+    try {
+      await w(500);
+      for (let i = 0; i < cfg.steps.length; i++) { mark(i); await cfg.steps[i](c); }
+      mark(items.length);
+    } catch (e) { if (e !== 'stop') throw e; }
+  }
+  function final() { run++; const c = Object.create(x); cfg.reset(c); cfg.final(c); x.hide(); mark(items.length); }
+  cfg.reset(Object.create(x)); // 재생 전에도 화면은 그려 둔다
+  sec.querySelector('.replay').addEventListener('click', play);
+  new IntersectionObserver((es, o) => {
+    if (!es[0].isIntersecting) return;
+    o.disconnect(); RM.matches ? final() : play();
+  }, {threshold: .35}).observe(stage);
+}
+// 실제 App.tsx 알림: undo가 있으면 체크 + 문구 + 6초 링 되돌리기 버튼
+function toast(frame, text, undo) {
+  frame.querySelector('.toast')?.remove();
+  frame.insertAdjacentHTML('beforeend', '<div class="toast' + (undo ? ' has-undo' : '') + '">' +
+    (undo ? '<span class="toast-check">' + ic('check') + '</span>' : '') + text +
+    (undo ? '<button type="button" class="toast-undo" tabindex="-1"><svg class="toast-ring" viewBox="0 0 36 36"><circle cx="18" cy="18" r="16" pathLength="100"/></svg>' + ic('undo') + '</button>' : '') + '</div>');
+  const el = frame.querySelector('.toast');
+  setTimeout(() => el.remove(), undo ? 6000 : 3500);
+  return el;
+}
+function modal(frame, title, body) {
+  frame.insertAdjacentHTML('beforeend', '<div class="t-layer"><div class="t-backdrop"></div><div class="dialog" open><div class="dialog-head"><h2>' + title +
+    '</h2><button type="button" tabindex="-1">×</button></div>' + body + '</div></div>');
+  return frame.querySelector('.t-layer');
+}
+
+/* ---------- 1. 시간표 ---------- */
+const NEW = {id: 50, staff: 4, day: 2, start: 900, end: 960, role: 'general'};
+const timeSelect = (label, m) => '<div class="field">' + label + '<div class="time-select"><select tabindex="-1"><option>' + (m >= 720 ? '오후' : '오전') + '</option></select>' +
+  '<select tabindex="-1"><option>' + ((m / 60 | 0) > 12 ? (m / 60 | 0) - 12 : m / 60 | 0) + '시</option></select><select tabindex="-1"><option>' + String(m % 60).padStart(2, '0') + '분</option></select></div></div>';
+demo(document.getElementById('schedule'), {
+  reset(x) {
+    x.frame = x.$('#sch-frame');
+    x.frame.innerHTML = '<section class="view schedule-workspace">' + pageTop({title: '시간표', lower: '빈 칸을 누르면 근무 추가, 근무를 누르면 수정, 위·아래 끝을 끌면 길이, 블록을 끌면 자리를 바꿔요.',
+      actions: adminMenu('<button type="button" tabindex="-1">주간표에 근무 추가</button><button type="button" tabindex="-1" data-k="fill">확정표대로 채우기</button><hr><button type="button" tabindex="-1">확정표에 근무 추가</button>') +
+        '<div class="tds-segmented"><button type="button" tabindex="-1" aria-pressed="true">이번 주</button><button type="button" tabindex="-1" aria-pressed="false">확정표</button></div>'}) +
+      '<section class="tds-card sch-card">' + schHead() + '<div class="sch-scroll"></div></section></section>';
+    x.shifts = [];
+    x.draw = (opts) => { x.frame.querySelector('.sch-scroll').innerHTML = board(x.shifts, opts); };
+    x.draw();
+    x.blk = id => x.frame.querySelector('[data-id="' + id + '"]');
+    // 칸 좌표: day 요일, slot = (분-540)/30, fx = 칸 안 가로 위치
+    x.pt = (day, slot, fx = .5) => {
+      const t = x.frame.querySelectorAll('.sch-track')[day], s = x.stage.getBoundingClientRect(), r = t.getBoundingClientRect();
+      return [r.left - s.left + r.width * fx, r.top - s.top + r.height * slot / 26];
+    };
+    x.park(.62, .3);
+  },
+  steps: [
+    async x => {
+      const menu = x.frame.querySelector('.admin-menu');
+      await x.to(menu.querySelector('summary'), .5, .55, 900); await x.click(menu.querySelector('summary'));
+      menu.open = true; await x.w(450);
+      const item = menu.querySelector('[data-k=fill]');
+      await x.to(item, .3, .5, 500); item.classList.add('t-hover'); await x.w(250); await x.click(item);
+      menu.open = false;
+      const layer = modal(x.frame, '확정표를 주간 근무 시간표에 붙여넣기',
+        '<label class="field">붙여넣을 주에 속한 날짜<input type="date" tabindex="-1" readonly value="2026-11-16"></label>' +
+        '<p class="hint">확정표의 요일과 시간을 대상 주에 복사해요. 대상 주에 근무가 있으면 덮어쓸지 물어봐요. 퇴직한 근무자의 근무는 빼고 복사해요.</p>' +
+        '<div class="form-actions"><button class="btn" type="button" tabindex="-1">취소</button><button class="btn primary" type="button" tabindex="-1">주간표에 붙여넣기</button></div>');
+      await x.w(900);
+      const ok = layer.querySelector('.btn.primary');
+      await x.to(ok, .5, .5, 700); await x.click(ok);
+      layer.remove();
+      x.shifts = CONFIRMED.map(s => ({...s})); x.draw({flash: x.shifts.map(s => s.id)});
+      toast(x.frame, x.shifts.length + '개 확정 근무를 주간표에 붙여넣었어요.');
+      await x.w(1800);
+    },
+    async x => {
+      await x.move(...x.pt(2, 12.5, .75), 900); await x.w(250); await x.click();
+      x.frame.querySelector('.toast')?.remove();
+      const layer = modal(x.frame, '근무 추가',
+        '<label class="field">날짜<input type="date" tabindex="-1" readonly value="2026-11-18"></label>' +
+        '<label class="field">근무자<select tabindex="-1" data-k="who">' + Object.values(STAFF).map(n => '<option>' + n + '</option>').join('') + '</select></label>' +
+        '<label class="field">구분<select tabindex="-1" data-k="role"><option>데스크</option><option>대기 근무</option></select></label>' +
+        timeSelect('시작 시각', 900) + timeSelect('종료 시각', 960) +
+        '<div class="form-actions"><button class="btn" type="button" tabindex="-1">취소</button><button class="btn primary" type="button" tabindex="-1">저장하기</button></div>');
+      await x.w(700);
+      for (const [k, v] of [['who', 3], ['role', 1]]) {
+        const sel = layer.querySelector('[data-k=' + k + ']');
+        await x.to(sel, .3, .5, 600); await x.click(); sel.classList.add('t-focus'); await x.w(250);
+        sel.selectedIndex = v; await x.w(450); sel.classList.remove('t-focus');
+      }
+      const ok = layer.querySelector('.btn.primary');
+      await x.to(ok, .5, .5, 700); await x.click(ok);
+      layer.remove();
+      x.shifts.push({...NEW}); x.draw({flash: [NEW.id]});
+      toast(x.frame, '근무를 저장했어요.');
+      await x.w(1500);
+    },
+    async x => {
+      const s = x.shifts.find(s => s.id === NEW.id);
+      let p = x.rel(x.blk(NEW.id), .5, .97); await x.move(p[0], p[1], 700);
+      x.cursor('resize'); await x.w(300);
+      const drag = async (to, ms) => {
+        const dir = Math.sign(to - s.end);
+        while (s.end !== to) {
+          s.end += dir * 30; x.draw({dragging: NEW.id});
+          p = x.rel(x.blk(NEW.id), .5, .97); await x.move(p[0], p[1], ms);
+        }
+      };
+      await drag(1050, 160); await x.w(500); await drag(990, 180); await x.w(200);
+      x.draw({flash: [NEW.id]});
+      toast(x.frame, '근무 시간을 15:00–16:30로 바꿨어요.', true);
+      x.cursor(); await x.w(1400);
+    },
+    async x => {
+      const s = x.shifts.find(s => s.id === NEW.id);
+      let p = x.rel(x.blk(NEW.id), .5, .45); await x.move(p[0], p[1], 600);
+      x.cursor('grab'); await x.w(250);
+      // 커서를 따라 30분·요일 단위로 붙는다 (실제 startMove와 같은 모양)
+      const path = [[2, 930], [3, 960], [3, 990], [3, 1020], [4, 1050], [4, 1080]];
+      for (const [day, start] of path) {
+        s.day = day; s.end = start + (s.end - s.start); s.start = start; x.draw({dragging: NEW.id});
+        p = x.rel(x.blk(NEW.id), .5, .45); await x.move(p[0], p[1], 170);
+      }
+      await x.w(200); x.draw({flash: [NEW.id]}); x.cursor();
+      toast(x.frame, '근무를 금요일 18:00–19:30로 옮겼어요.', true);
+      await x.w(1300);
+    },
+    async x => {
+      const undo = x.frame.querySelector('.toast-undo');
+      await x.to(undo, .5, .5, 800); await x.click(undo);
+      Object.assign(x.shifts.find(s => s.id === NEW.id), {day: 2, start: 900, end: 990});
+      x.frame.querySelector('.toast').remove(); await x.w(250);
+      x.draw({flash: [NEW.id]}); toast(x.frame, '되돌렸어요.');
+      await x.w(900); x.hide();
+    }
+  ],
+  final(x) { x.shifts = [...CONFIRMED.map(s => ({...s})), {...NEW, end: 990}]; x.draw(); }
+});
+
+/* ---------- 2. 월간 업무: 과월호 체크 → 태깅 → 청소 ---------- */
+const GROUPS = [['중앙일보', '코리아헤럴드', 'FT'], ['국민일보', '경기일보', '경인일보'], ['동아일보', '아사히', '인민일보'], ['조선일보', '코리아타임스'],
+  ['매일경제', '전자신문', '요미우리'], ['한국경제', '인천일보', '경향신문'], ['한국일보', '한겨레', '뉴욕타임스']];
+const WINNERS = [3, 6, 1, 7, 2, 5, 4], DONE = [[1, 1, 1], [1, 0, 0], [1, 1, 0], [1, 1], [0, 0, 0], [1, 0, 0], [0, 0, 0]];
+const TAGGED = [1, 0, 1, 1, 0, 1, 0]; // 근무자 1~7의 11월 태깅 완료
+const CLEAN = ['지우', '예린'], CLEAN_HISTORY = [['10', '하늘, 도윤'], ['9', '가람, 서윤'], ['8', '다온, 예린']];
+// 실제 Archive.tsx ProgressCard
+const progressCard = (label, done, total, unit = '개') => '<section class="tds-card monthly-progress"><p class="monthly-progress-label">' + label + '</p><strong>' +
+  (done === total ? total + unit + ' 모두 끝났어요' : total + unit + ' 중 ' + done + unit + ' 끝났어요') + '</strong><div class="tds-progress"><i style="width:' + Math.round(done / total * 100) + '%"></i></div></section>';
+const MONTHLY_PANELS = {
+  archive: x => {
+    const all = x.done.flat();
+    return '<div class="monthly-panel">' + progressCard('11월 과월호 정리', all.filter(Boolean).length, all.length) +
+      '<div class="monthly-groups">' + GROUPS.map((papers, g) => {
+        const count = x.done[g].filter(Boolean).length, complete = count === papers.length;
+        return '<section class="tds-card monthly-group">' + listHeader(STAFF[WINNERS[g]], '<span class="' + (complete ? 'is-complete">완료' : 'is-count">' + count + ' / ' + papers.length) + '</span>', 'h3') +
+          papers.map((p, i) => '<label class="check-row"><span>' + p + '</span>' + check(x.done[g][i]) + '</label>').join('') + '</section>';
+      }).join('') + '</div><p class="monthly-note">정리를 마친 신문을 누르면 체크돼요.</p></div>';
+  },
+  tagging: x => '<div class="monthly-panel">' + progressCard('11월 태깅', x.tagged.filter(Boolean).length, 7, '명') +
+    '<section class="tds-card monthly-list">' + listHeader('근무자', '', 'h3') + '<div class="tagging-grid">' +
+    x.tagged.map((on, i) => '<label class="check-row">' + check(on) + '<span>' + STAFF[i + 1] + '</span></label>').join('') + '</div></section></div>',
+  cleaning: () => '<div class="monthly-panel"><section class="tds-card monthly-progress clean-result"><p class="monthly-progress-label">11월 청소 담당</p>' +
+    '<div class="clean-names">' + CLEAN.map(n => '<strong>' + n + '</strong>').join('') + '</div></section>' +
+    '<section class="tds-card monthly-list">' + listHeader('지난 기록', '', 'h3') + '<ul class="clean-history">' +
+    CLEAN_HISTORY.map(([m, names]) => '<li><span>2026년 ' + m + '월</span><strong>' + names + '</strong></li>').join('') + '</ul></section></div>'
+};
+demo(document.getElementById('monthly'), {
+  reset(x) {
+    x.frame = x.$('#monthly-frame');
+    x.done = DONE.map(r => [...r]); x.tagged = [...TAGGED];
+    x.frame.innerHTML = '<section class="view monthly-view">' +
+      pageTop({title: '11월 월간 업무', lower: '과월호 정리, 태깅, 청소 담당을 한곳에서 확인해요', actions: adminMenu() +
+        '<div class="week-controls"><button type="button" class="icon-btn" tabindex="-1">' + ic('left') + '</button><strong>2026년 11월</strong><button type="button" class="icon-btn" tabindex="-1">' + ic('chevron') + '</button></div>'}) +
+      '<div class="tds-tabs">' + [['archive', '과월호'], ['tagging', '태깅'], ['cleaning', '청소']].map(([k, l]) => '<button type="button" tabindex="-1" data-tab="' + k + '">' + l + '</button>').join('') + '</div>' +
+      '<div data-k="panel"></div></section>';
+    x.panel = x.frame.querySelector('[data-k="panel"]');
+    x.show = tab => {
+      x.tab = tab;
+      x.frame.querySelectorAll('[data-tab]').forEach(b => b.setAttribute('aria-selected', b.dataset.tab === tab));
+      x.panel.innerHTML = MONTHLY_PANELS[tab](x);
+    };
+    x.show('archive');
+    // 탭마다 높이가 달라 페이지가 출렁이지 않게 가장 긴 과월호 화면 높이로 고정한다
+    x.frame.style.minHeight = ''; x.frame.style.minHeight = x.frame.offsetHeight + 'px';
+    x.goTab = async tab => { const b = x.frame.querySelector('[data-tab="' + tab + '"]'); await x.to(b, .5, .5, 900); await x.click(b); x.show(tab); await x.w(700); };
+  },
+  steps: [
+    async x => {
+      // 다온 조의 남은 신문 두 개를 체크해서 조를 끝낸다
+      for (const i of [1, 2]) {
+        const box = x.panel.querySelectorAll('.monthly-group')[1].querySelectorAll('.tds-check')[i];
+        await x.to(box, .5, .5, i === 1 ? 900 : 500); await x.click(box);
+        x.done[1][i] = 1; x.show('archive'); toast(x.frame, '과월호 완료를 저장했어요.');
+        await x.w(700);
+      }
+      await x.w(500);
+    },
+    async x => {
+      await x.goTab('tagging');
+      const box = x.panel.querySelectorAll('.tagging-grid .tds-check')[4];
+      await x.to(box, .5, .5, 800); await x.click(box);
+      x.tagged[4] = 1; x.show('tagging'); toast(x.frame, '태깅 상태를 저장했어요.');
+      await x.w(1200);
+    },
+    async x => {
+      x.frame.querySelector('.toast')?.remove();
+      await x.goTab('cleaning');
+      await x.to(x.panel.querySelector('.clean-names'), .5, .5, 800);
+      await x.w(1600);
+    }
+  ],
+  final(x) { x.done[1] = [1, 1, 1]; x.tagged[4] = 1; x.show('archive'); }
+});
+
+/* ---------- 3. 매뉴얼 검색 ---------- */
+const MANUAL_TOC = [[2, '1. 근로 기본사항', '출근 및 근무시간 · 지각 및 근무시간 변경 시 유의사항 · 근무(데스크) 중 기본 수칙 · 데스크가 아닐 때 근무 수칙'], [3, '2. 오픈 업무', '오픈 순서 · 2층 문이 잠겨 있을 때 · 신문 최신화 및 관리'], [3, '3. 마감 업무', '마감 순서'],
+  [2, '4. 연속간행물 자료 관리', '과월호 (매월) · 태깅 (매월) · 청소 (매월) · 잡지 체크인 및 배가 (입수 시) · 사보 체크인 및 배가 (입수 시) · 기증 간행물 자료 (입수 시) · 잡지 대출 방법 · 잡지 반납 방법'],
+  [0, '5. 상호대차 업무', '상호대차 대출 — 우리 대학 자료 출발 (택배 나갈 것) · 타 대학 도서 도착 및 우리 자료 반납 (택배 받은 것) · 타 대학 도서 반납 (택배 나갈 것) · 상호대차 책 놓는 위치'],
+  [0, '6. 기타 자료 및 시스템 업무', '원문 복사 · job library 자료 정리 · 논문 자료 · 잡지 제본 · 전자정보 이용 교육 공지 작성'], [1, '7. 이용자 응대', '도서관 이용 관련 안내 · 스터디룸 & 개인학습실(캐럴) · 프린터 문의 · 선생님별 담당 문의'],
+  [0, '8. 전화 응대', '상황별 응대 · 전화 돌리기 · 전화 당겨받기 · 전화 걸기'], [0, '9. 기타', '통계 · 비품 · 2층 서식 · 데스크 컴퓨터']];
+const CH4 = ['4.1 과월호 (매월)', '4.2 태깅 (매월)', '4.3 청소 (매월)', '4.4 잡지 체크인 및 배가 (입수 시)', '4.5 사보 체크인 및 배가 (입수 시)', '4.6 기증 간행물 자료 (입수 시)', '4.7 잡지 대출 방법', '4.8 잡지 반납 방법'];
+const h = (tag, num, title, stars = '') => '<' + tag + ' class="manual-heading"' + (num === '4.7' ? ' data-k="target"' : '') + '><span class="manual-num">' + num + '</span><span>' + title + '</span>' + (stars && '<span class="manual-stars">' + stars + '</span>') + '</' + tag + '>';
+// 실제 manual.md 4장 (사진은 빼고, 사람 이름은 가렸다)
+const CH4_DOC = h('h2', '4', '연속간행물 자료 관리', '★★') +
+  h('h3', '4.1', '과월호 (매월)') + '<ul><li><strong>데스크가 아닐 때</strong> 할 것</li><li>가급적 <strong>매월 중순</strong>까지 해 두기</li><li>해외 신문은 최근 비치 신문에 과월호 분량이 포함되어 있으면 기다렸다가 하기</li><li>분량은 사다리타기로 정하기</li></ul>' +
+  h('h3', '4.2', '태깅 (매월)') + '<ul><li><strong>1인당 한 달에 25개씩</strong> 해 두기</li></ul><ol><li>솔라스 접속</li><li>대출반납</li><li>톱니바퀴 아이콘 클릭</li><li>태깅 설정: 보안설정 (또는 태깅 매뉴얼을 참고해 MMI 작업)</li><li>태깅 후 바탕화면 「태깅확인」 파일에 체크</li></ol>' +
+  h('h3', '4.3', '청소 (매월)') + '<ul><li>매달 2명: 지각자 또는 사다리타기로 뽑기</li><li>데스크와 업무지원실 쓸기</li><li>빗자루는 업무지원실 문 뒤</li></ul>' +
+  h('h3', '4.4', '잡지 체크인 및 배가 (입수 시)') + '<ol><li>종이에 체크인</li><li>책 훼손 상태 확인</li><li>담당 선생님께 드리기 (컴퓨터로 체크인해 주심)</li><li>잡지를 돌려받으면 맨 뒷장에 태깅 스티커와 인천대 스티커 붙이기</li><li>알맞은 잡지 칸에 꽂기 (「1층 비치 서가」라고 써 있으면 1층에 꽂기)</li></ol>' +
+  h('h3', '4.5', '사보 체크인 및 배가 (입수 시)') + '<ul><li>사보는 <strong>체크인만 하고 태깅 안 함</strong> (체크인 후 저장 꼭 하기)</li><li>여러 권이 들어와도 서가에는 <strong>한 권만</strong> 비치</li><li>나머지는 업무지원실 안쪽 북카트에 꽂기</li></ul>' +
+  h('h3', '4.6', '기증 간행물 자료 (입수 시)') + '<ol><li>바탕화면 「체크인」 파일</li><li>「2026 기증 간행물 체크인 카드」 선택</li><li>꼼꼼하게 찾아 체크 — <strong>어느 층에 비치하는지 꼭 체크!</strong></li><li>해당하는 곳에 꽂기</li><li>파일에 해당 간행물이 없으면 업무지원실 북카트에 꽂기</li></ol>' +
+  '<aside class="manual-callout warning"><p>⚠ 주의</p><ul><li>간행물이 온 날짜가 아니라 <strong>발행일 기준</strong>으로 입력</li><li>이름으로 검색해서 안 나오면 ISSN으로도 검색</li></ul></aside>' +
+  h('h3', '4.7', '잡지 대출 방법') + '<aside class="manual-callout warning"><p>⚠ 시민, 재학생은 <strong>불가</strong>. 교수, 직원, 조교만 가능</p></aside>' +
+  '<ol><li>대출 대장 작성 요청</li><li>솔라스 → 계속자료관리 → 이슈관리 → 입수</li><li>「서명」에 대출할 잡지 이름 입력 → 해당 호 더블클릭</li><li>대출반납 → 대출자 정보 입력 → 반납예정일을 <strong>현재일 기준 2주 뒤</strong>로 수정 → 대출</li><li>대출반납 → 대출반납 → 톱니바퀴 아이콘 클릭 → <strong>보안해제</strong></li></ol>' +
+  h('h3', '4.8', '잡지 반납 방법') + '<p>두 가지 방법 중 하나를 고르기:</p><ul><li>4.7 절차를 반납으로 바꿔 진행한 뒤 잡지를 <strong>보안설정</strong>해서 꽂아 놓기</li><li>계속자료관리 → 부가기능 → 대출반납에서 <strong>일괄반납</strong> 처리 후 보안설정해서 꽂아 놓기</li></ul>';
+// 본문 글자에도 검색어를 칠한다 (번호·별표는 빼고)
+function markText(root, words) {
+  const walk = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {acceptNode: n => n.parentElement.closest('.manual-num,.manual-stars') ? 2 : 1});
+  const nodes = []; while (walk.nextNode()) nodes.push(walk.currentNode);
+  nodes.forEach(n => { const html = marked(n.data, words); if (html.includes('<mark>')) { const s = document.createElement('span'); s.innerHTML = html; n.replaceWith(...s.childNodes); } });
+}
+const MANUAL_TOP = pageTop({title: '연속간행물실 근로 매뉴얼', lower: '업무 순서와 이용자 응대 방법을 장별로 정리했어요', actions: '<button type="button" class="btn small weak" tabindex="-1">매뉴얼 편집</button>'});
+const PLACEHOLDER = '무엇이 궁금한가요? 예) 택배 반송';
+demo(document.getElementById('manual'), {
+  reset(x) {
+    x.frame = x.$('#manual-frame'); x.frame.scrollTop = 0; x.open = openManualPage;
+    x.frame.innerHTML = '<section class="view mnl">' + MANUAL_TOP + '<section class="tds-card mnl-find">' + searchField(PLACEHOLDER) +
+      chips(['오픈', '마감', '전화 왔을 때', '택배 가방 도착', '잡지 입수', '이용자 문의', '누구에게 물어보지?']) + '</section>' + toc(MANUAL_TOC) + '</section>';
+    x.park(.7, .75);
+  },
+  steps: [
+    async x => {
+      const label = x.frame.querySelector('.mnl-search'), input = label.querySelector('input'), box = x.frame.querySelector('.mnl-searchbox');
+      await x.to(input, .4, .5, 900); await x.click(); input.classList.add('t-focus'); await x.w(300);
+      await x.type('잡지 대출', q => {
+        input.value = q; label.querySelector('kbd')?.remove();
+        box.querySelector('.mnl-results')?.remove();
+        if (RESULTS[q]) box.insertAdjacentHTML('beforeend', resultsBox(q));
+      }, 230);
+      await x.w(300);
+    },
+    async x => { x.hide(); await x.w(1700); },
+    async x => {
+      const btn = x.frame.querySelector('.mnl-results button');
+      await x.to(btn, .35, .3, 800); btn.classList.add('t-hover'); await x.w(450); await x.click(btn);
+      x.open(x);
+      await x.w(500);
+      const target = x.frame.querySelector('[data-k=target]');
+      x.frame.scrollTo({top: target.offsetTop - 16, behavior: RM.matches ? 'auto' : 'smooth'});
+      await x.w(700);
+      target.classList.add('mnl-flash'); x.hide(); await x.w(2000);
+    }
+  ],
+  final(x) {
+    x.open(x);
+    const target = x.frame.querySelector('[data-k=target]');
+    x.frame.scrollTop = target.offsetTop - 16;
+  }
+});
+// 결과를 누르면 장 보기 화면으로 바뀐다 (Manual.tsx의 page 보기)
+function openManualPage(x) {
+  x.frame.innerHTML = '<section class="view mnl"><div class="mnl-read"><aside class="tds-card mnl-side"><nav><ol class="mnl-nav"><li><a class="mnl-nav-chapter">매뉴얼 홈</a></li>' +
+    MANUAL_TOC.map(([, name]) => '<li' + (name.startsWith('4.') ? ' class="is-active"' : '') + '><a class="mnl-nav-chapter">' + name + '</a>' +
+      (name.startsWith('4.') ? '<ol class="mnl-nav-sub">' + CH4.map(c => '<li><a' + (c.startsWith('4.7') ? ' aria-current="location"' : '') + '>' + c + '</a></li>').join('') + '</ol>' : '') + '</li>').join('') +
+    '</ol></nav></aside><div class="mnl-main"><section class="tds-card mnl-find is-compact">' + searchField(PLACEHOLDER, '잡지 대출') + '</section>' +
+    '<article class="tds-card mnl-doc"><div class="mnl-doc-top"><nav class="mnl-crumb"><a>매뉴얼</a>' + ic('chevron') + '<span>4. 연속간행물 자료 관리</span></nav>' +
+    '<button type="button" class="btn small weak" tabindex="-1">매뉴얼 편집</button></div>' + CH4_DOC + '</article></div></div></section>';
+  markText(x.frame.querySelector('.mnl-doc'), WORDS);
+}
+
+/* ---------- 4. 규정 + AI에게 물어보기 ---------- */
+const REG_TOC = [[3, '0. 내선번호 빠른 찾기', '가장 많이 돌리는 곳 · 회원·자료 · 연구·연속간행물 · 공간·시설 · 그 밖에'], [1, '1. 층별 안내', '중앙관 · 이룸관'],
+  [2, '2. 직원 현황', '관장·과장 · 사무실 (이룸관 3F) · 수서·정리실 (중앙관 B1F) · 연속간행물실 (중앙관 2F) · 제1·제2자료실 · 그레이트북스 센터·안내실'],
+  [2, '3. 이용자별 안내', '한눈에 보기 · 재학생·대학원생·교직원 공통 · 열람실 이용 규칙 · 휴학생·졸업생·학부 수료생 · 대학원 수료생 · 인천시민·인천 소재 회사 재직자'],
+  [2, '4. 외부이용자', '도서관회원(대출) — 9416 · 도서관회원(열람) — 9401'], [3, '5. 대출·반납 안내', '대출 규정 · 대출 방법 · 연장 · 예약 · 반납 · 연체·변상 · 휴학·졸업과 미반납'],
+  [0, '6. 공간·시설', '시설별 문의 번호 · 예약 시설 규칙'], [3, '7. 운영시간', '24시간 운영 · 중앙관 · 이룸관 · 그 밖의 시간']];
+demo(document.getElementById('regulations'), {
+  reset(x) {
+    x.frame = x.$('#ai-frame');
+    x.frame.innerHTML = '<section class="view regulations-view"><div class="tds-tabs"><button type="button" tabindex="-1" aria-selected="true">규정 문서</button><button type="button" tabindex="-1" aria-selected="false">질문 기록</button></div>' +
+      '<section class="view mnl">' + pageTop({title: '도서관 이용 규정', lower: '전화 응대에 쓰는 이용 규정과 내선번호를 장별로 정리했어요', actions: '<button type="button" class="btn small weak" tabindex="-1">규정 편집</button>'}) +
+      '<section class="tds-card mnl-find">' + searchField('무엇이 궁금한가요? 예) 휴학생 대출') + chips(['내선번호 찾기', '이용자별 안내', '외부이용자', '대출·반납', '운영시간']) + '</section>' +
+      toc(REG_TOC) + '</section></section>' +
+      '<button type="button" class="inquiry-fab" tabindex="-1">' + ic('sparkles') + '</button>';
+    x.park(.45, .5);
+  },
+  steps: [
+    async x => {
+      const fab = x.frame.querySelector('.inquiry-fab');
+      await x.to(fab, .5, .5, 1000); await x.click(fab);
+      openChat(x.frame);
+      await x.w(900);
+    },
+    async x => {
+      const area = x.frame.querySelector('.chatbot-form textarea'), send = x.frame.querySelector('.chatbot-send');
+      await x.to(area, .3, .45, 700); await x.click();
+      await x.type(QUESTION, q => { area.value = q; send.disabled = false; }, 90);
+      await x.w(400);
+      await x.to(send, .5, .5, 500); await x.click(send);
+      // 답을 받는 동안: 입력은 잠기고 "생각하는 중"이 뜬다. 질문 말풍선은 답과 함께 붙는다.
+      area.disabled = true; send.disabled = true; x.frame.querySelector('.chatbot-form').classList.remove('t-focus');
+      const log = x.frame.querySelector('.chatbot-log');
+      log.insertAdjacentHTML('beforeend', bot('<p class="chat-bubble chatbot-thinking">생각하는 중<span class="chatbot-dots"><i></i><i></i><i></i></span></p>'));
+      x.hide(); await x.w(1900);
+    },
+    async x => {
+      const log = x.frame.querySelector('.chatbot-log');
+      log.lastElementChild.remove();
+      answered(x.frame);
+      log.scrollTo({top: log.scrollHeight, behavior: RM.matches ? 'auto' : 'smooth'});
+      await x.w(2200);
+    }
+  ],
+  final(x) { openChat(x.frame); answered(x.frame); const log = x.frame.querySelector('.chatbot-log'); log.scrollTop = log.scrollHeight; }
+});
+function answered(frame) {
+  const area = frame.querySelector('.chatbot-form textarea');
+  frame.querySelector('.chatbot-log').insertAdjacentHTML('beforeend', answerCard());
+  area.value = ''; area.disabled = false; frame.querySelector('.chatbot-form').classList.add('t-focus');
+}
+// Chatbot.tsx ChatPanel과 같은 마크업
+function openChat(frame) {
+      frame.insertAdjacentHTML('beforeend', '<aside class="chatbot"><div class="dialog-head"><h2>AI에게 물어보기</h2><button type="button" tabindex="-1">×</button></div>' +
+        '<div class="chatbot-log">' + bot('<p class="chat-bubble chatbot-answer">도서관 규정에 대해 궁금한 게 있으면 물어보세요. 규정에 맞춰 답해 드릴게요.</p>') + '</div>' +
+        '<form class="chatbot-form t-focus"><textarea rows="2" tabindex="-1" readonly placeholder="예) 상호대차는 어디로 문의해?"></textarea>' +
+        '<button type="button" class="chatbot-send" tabindex="-1" disabled><svg viewBox="0 0 24 24"><path transform="translate(1.597 1.37)" fill="currentColor" stroke="none" fill-rule="evenodd" d="M18.5919 0.0817929L1.05587 5.92879C-0.149126 6.33079 -0.381126 7.93779 0.663874 8.66279L5.49287 12.0238C6.10687 12.4508 6.93887 12.3768 7.46787 11.8478L11.1779 8.13779C11.5399 7.77579 12.1279 7.77479 12.4899 8.13779C12.8519 8.49979 12.8529 9.08779 12.4899 9.44979L8.78087 13.1588C8.25087 13.6878 8.17587 14.5208 8.60387 15.1348L11.9639 19.9658C12.6899 21.0098 14.2969 20.7788 14.6979 19.5718L20.5469 2.03579C20.9509 0.827793 19.8009 -0.320207 18.5919 0.0817929Z"/></svg></button></form></aside>');
+}
+
+/* ---------- 둘러보기 메뉴: 스크롤 위치를 따라 현재 메뉴 표시 ---------- */
+const tabStrip = document.querySelector('.tour-tabs ol'), tabs = [...tabStrip.querySelectorAll('a')];
+const spy = new IntersectionObserver(es => es.forEach(e => {
+  if (!e.isIntersecting) return;
+  tabs.forEach(a => {
+    const on = a.hash === '#' + e.target.id;
+    on ? a.setAttribute('aria-current', 'true') : a.removeAttribute('aria-current');
+    if (on) tabStrip.scrollTo({left: a.offsetLeft - (tabStrip.clientWidth - a.offsetWidth) / 2, behavior: 'smooth'});
+  });
+}), {rootMargin: '-45% 0px -50% 0px'});
+document.querySelectorAll('.feat').forEach(s => spy.observe(s));
+
+const ro = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); ro.unobserve(e.target); } }), {threshold: .2});
+document.querySelectorAll('.reveal').forEach(el => ro.observe(el));
+</script>
+</body>
+</html>
